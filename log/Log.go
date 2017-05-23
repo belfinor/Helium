@@ -8,11 +8,28 @@ package log
 
 
 import (
-    l "log"
+    "github.com/belfinor/Helium/time/strftime"
+    "os"
+    "time"
 )
 
 
 var _log_level int = 0
+
+
+type Config struct {
+    Template string `json:"template"`
+    Period   int    `json:"period"`
+    Save     int    `json:"save"`
+}
+
+
+
+var _config *Config
+var input chan string
+var fh *os.File
+var filename string
+var lastCheck int64
 
 
 var _log_levels map[string]int = map[string]int{
@@ -28,9 +45,71 @@ var _log_levels map[string]int = map[string]int{
 func logger( level string, text string ) {
     code, ok := _log_levels[level]
     if ok && code <= _log_level {
-        l.Println( level + ": " + text )
+        input <-  level + "| " + text
     }
 }
+
+
+func Init( c *Config ) {
+    if _config == nil {
+
+        _config = c
+        filename = strftime.Format( c.Template, time.Now() )
+        var err error
+
+        if fh, err = os.OpenFile(filename, os.O_RDWR | os.O_APPEND | os.O_CREATE, 0755) ; err != nil {
+            panic(err)
+        }
+
+        input = make( chan string, 1024 )
+        lastCheck = time.Now().Unix()
+        
+        go logWriter()
+    }
+}
+
+
+
+func logRotate() {
+
+    if lastCheck + 60 > time.Now().Unix() {
+        return
+    }
+
+    lastCheck = time.Now().Unix()
+    new_name := strftime.Format( _config.Template, time.Now() )
+
+    if new_name != filename {
+        fh.Close()
+                
+        var err error
+                
+        if fh, err = os.OpenFile(filename, os.O_RDWR | os.O_APPEND | os.O_CREATE, 0755) ; err != nil {
+            panic(err)
+        }
+                
+        filename = new_name
+    }
+
+}
+
+
+func logWriter() {
+    for {
+        select {
+        
+        case str := <- input:
+            logRotate()    
+   
+            fh.WriteString( strftime.Format( "%Y-%m-%d %H:%M:%S", time.Now() ) + "|" + str + "\n" )
+            fh.Sync()
+ 
+        case <- time.After( time.Minute ):
+            logRotate()    
+        }
+    }
+}
+
 
 
 func Fatal( str string ) {
