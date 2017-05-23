@@ -3,8 +3,8 @@ package log
 
 // @author  Mikhail Kirillov
 // @email   mikkirillov@yandex.ru
-// @version 1.000
-// @date    2017-05-15
+// @version 1.001
+// @date    2017-05-23
 
 
 import (
@@ -83,14 +83,17 @@ func logRotate() {
         fh.Close()
                 
         var err error
-                
+        filename = new_name       
+         
         if fh, err = os.OpenFile(filename, os.O_RDWR | os.O_APPEND | os.O_CREATE, 0755) ; err != nil {
             panic(err)
         }
                 
-        filename = new_name
+        if _config.Save > 0 {
+            rm_name := strftime.Format( _config.Template, time.Unix( lastCheck - int64(_config.Save * _config.Period), 0 ) )
+            os.Remove(rm_name)
+        }
     }
-
 }
 
 
