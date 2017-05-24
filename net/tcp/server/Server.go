@@ -31,24 +31,26 @@ var nextId int64 = 1;
 
 func (s *Server) Start() {
 
-	ln, err := net.Listen( "tcp", s.Host + ":" + strconv.Itoa(s.Port) )
+    ln, err := net.Listen( "tcp", s.Host + ":" + strconv.Itoa(s.Port) )
 	
-	if err != nil {
-		panic( "bind port error" )
-	}
+    if err != nil {
+        panic( "bind port error" )
+    }
 
-        log.Info( prefix + "start " + s.Host + ":" + strconv.Itoa(s.Port) )
+    log.Info( prefix + "start " + s.Host + ":" + strconv.Itoa(s.Port) )
 
-	for {
-		conn, err := ln.Accept()
-		
-		if err != nil {
-			continue
-		}
-		
-                nextId++
-		go s.connet_handler(conn, nextId )
-	}
+    for {
+        
+        conn, err := ln.Accept() 
+
+        if err != nil {
+            continue
+        }
+			
+        nextId++
+
+        go s.connet_handler(conn, nextId )
+    }
 }
 
 
@@ -88,10 +90,11 @@ func (s *Server) connet_handler(conn net.Conn, id int64 ) {
         }
 
         if stop {
+            log.Debug( prefix + fmt.Sprintf( "conection #%d get stop signal", id ) )
             break
         }
     }
 
-    log.Debug( prefix + fmt.Sprintf( "connection #%d closed" ) )
+    log.Info( prefix + fmt.Sprintf( "connection #%d closed" ) )
 }
 
