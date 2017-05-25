@@ -3,8 +3,8 @@ package log
 
 // @author  Mikhail Kirillov
 // @email   mikkirillov@yandex.ru
-// @version 1.001
-// @date    2017-05-23
+// @version 1.002
+// @date    2017-05-25
 
 
 import (
@@ -21,6 +21,7 @@ type Config struct {
     Template string `json:"template"`
     Period   int    `json:"period"`
     Save     int    `json:"save"`
+    Level    string `json:"level"`
 }
 
 
@@ -63,7 +64,9 @@ func Init( c *Config ) {
 
         input = make( chan string, 1024 )
         lastCheck = time.Now().Unix()
-        
+ 
+        SetLevel( c.Level )
+       
         go logWriter()
     }
 }
