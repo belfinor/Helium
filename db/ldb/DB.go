@@ -3,13 +3,14 @@ package ldb
 
 // @author  Mikhail Kirillov
 // @email   mikkirillov@yandex.ru
-// @version 1.000
-// @date    2017-05-18
+// @version 1.001
+// @date    2017-05-26
 
 
 import (
     "github.com/syndtr/goleveldb/leveldb"
     "github.com/syndtr/goleveldb/leveldb/util"
+    "github.com/belfinor/Helium/log"
     "sync"
 )
 
@@ -33,8 +34,8 @@ func Init( base string ) {
             dbpath: base,
         }
 
-        _db.ldb,_ = leveldb.OpenFile(base,nil)
-    
+        log.Info( "open database: " + base )
+        _db.ldb,_ = leveldb.OpenFile(base,nil)   
     }
 }
 
