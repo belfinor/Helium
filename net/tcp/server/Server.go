@@ -2,8 +2,8 @@ package server
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2017-05-25
+// @version 1.002
+// @date    2017-05-27
 
 
 import (
@@ -17,7 +17,7 @@ import (
 
 type Context struct {
     Id    int64
-    State string
+    State map[string]string
 }
 
 
@@ -63,7 +63,7 @@ func (s *Server) Start() {
 func (s *Server) connet_handler(conn net.Conn, id int64 ) {
     defer conn.Close()
 
-    context := Context{ Id: id, State: "" }
+    context := Context{ Id: id, State: make( map[string]string ) }
 
     log.Info( prefix + fmt.Sprintf( "new conection #%d", id ) )
 
@@ -103,6 +103,6 @@ func (s *Server) connet_handler(conn net.Conn, id int64 ) {
         }
     }
 
-    log.Info( prefix + fmt.Sprintf( "connection #%d closed" ) )
+    log.Info( prefix + fmt.Sprintf( "connection #%d closed", id ) )
 }
 
