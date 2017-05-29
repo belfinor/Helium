@@ -3,8 +3,8 @@ package log
 
 // @author  Mikhail Kirillov
 // @email   mikkirillov@yandex.ru
-// @version 1.002
-// @date    2017-05-25
+// @version 1.003
+// @date    2017-05-29
 
 
 import (
@@ -67,10 +67,14 @@ func Init( c *Config ) {
  
         SetLevel( c.Level )
        
+        if _config.Save > 0 {
+            rm_name := strftime.Format( _config.Template, time.Unix( lastCheck - int64(_config.Save * _config.Period), 0 ) )
+            os.Remove(rm_name)
+        }
+
         go logWriter()
     }
 }
-
 
 
 func logRotate() {
