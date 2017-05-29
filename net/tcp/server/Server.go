@@ -2,22 +2,28 @@ package server
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2017-05-27
+// @version 1.003
+// @date    2017-05-29
 
 
 import (
     "bufio"
     "fmt"
     "github.com/belfinor/Helium/log"
+    "github.com/belfinor/Helium/math/fibonacci"
+    "math/rand"
     "net"
     "strconv"
+    "time"
 )
 
 
 type Context struct {
-    Id    int64
-    State map[string]string
+    Id        int64
+    State     map[string]string
+    Random    *rand.Rand
+    Fibonacci *fibonacci.Fibonacci
+    Tact      int64
 }
 
 
@@ -63,7 +69,13 @@ func (s *Server) Start() {
 func (s *Server) connet_handler(conn net.Conn, id int64 ) {
     defer conn.Close()
 
-    context := Context{ Id: id, State: make( map[string]string ) }
+    context := Context{ 
+        Id:        id, 
+        State:     make( map[string]string ),
+        Random:    rand.New( rand.NewSource( time.Now().Unix() ) ),
+        Fibonacci: fibonacci.MakeSeq(),
+        Tact:      0,
+     }
 
     log.Info( prefix + fmt.Sprintf( "new conection #%d", id ) )
 
@@ -79,6 +91,8 @@ func (s *Server) connet_handler(conn net.Conn, id int64 ) {
             log.Debug( prefix + fmt.Sprintf( "connection #%d broken", id ) )
             break
         }
+
+        context.Tact++
 
         resp, stop := s.Callback( str, &context )
 
