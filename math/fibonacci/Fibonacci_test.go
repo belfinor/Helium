@@ -12,7 +12,7 @@ import (
 
 
 func TestFibonacci( t *testing.T ) {
-    seq := MakeSeq()
+    seq := New()
 
     if seq.GetNumber() != 0 || seq.GetCurrent() != 1 {
         t.Fatal( "MakeSeq error" )

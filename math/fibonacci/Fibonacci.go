@@ -13,7 +13,7 @@ type Fibonacci struct {
 }
 
 
-func MakeSeq() *Fibonacci {
+func New() *Fibonacci {
     return &Fibonacci { current: 1, prev: 0, number: 0 }
 }
 
