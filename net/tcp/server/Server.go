@@ -10,7 +10,6 @@ import (
     "bufio"
     "fmt"
     "github.com/belfinor/Helium/log"
-    "github.com/belfinor/Helium/math/fibonacci"
     "math/rand"
     "net"
     "strconv"
@@ -22,7 +21,6 @@ type Context struct {
     Id        int64
     State     map[string]string
     Random    *rand.Rand
-    Fibonacci *fibonacci.Fibonacci
     Tact      int64
 }
 
@@ -73,7 +71,6 @@ func (s *Server) connet_handler(conn net.Conn, id int64 ) {
         Id:        id, 
         State:     make( map[string]string ),
         Random:    rand.New( rand.NewSource( time.Now().Unix() ) ),
-        Fibonacci: fibonacci.MakeSeq(),
         Tact:      0,
      }
 
