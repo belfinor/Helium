@@ -2,8 +2,13 @@ package errors
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2017-05-31
+// @version 1.001
+// @date    2017-06-01
+
+
+import (
+    "github.com/belfinor/Helium/log"
+)
 
 
 type Error struct {
@@ -12,8 +17,8 @@ type Error struct {
 }
 
 
-var codes map[string]string = map[string]string{
-    "E0001": "Внутренняя ошибка",
+var codes map[string][]string = map[string][]string{
+    "E0001": []string{ "Внутренняя ошибка", "Внутренняя ошибка" },
 }
 
 
@@ -21,7 +26,12 @@ func New( code string ) Error {
     text, has := codes[code]
 
     if has {
-        return Error{ Code: code, Text: text }
+        if len(text) > 1 {
+            for _, msg := range text[1:] {
+                log.Error( msg )
+            }
+        }
+        return Error{ Code: code, Text: text[0] }
     }
 
     return Error{ Code: "E0001", Text: "Внутренняя ошибка" }
@@ -33,7 +43,7 @@ func (e *Error) Error() string {
 }
 
 
-func SetCodes( tab map[string]string ) {
+func SetCodes( tab map[string][]string ) {
     codes = tab
 }
 
