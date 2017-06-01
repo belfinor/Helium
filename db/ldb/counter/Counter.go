@@ -2,8 +2,8 @@ package counter
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2017-05-27
+// @version 1.001
+// @date    2017-06-01
 
 
 import (
@@ -12,10 +12,7 @@ import (
 )
 
 
-func Inc( key []byte, val int64 ) int64 {
-    ldb.Lock()
-    defer ldb.Unlock()
-
+func IncUnsafe( key []byte, val int64 ) int64 {
     raw := ldb.GetUnsafe( key )
     cur := pack.Bytes2Int( raw )
 
@@ -29,6 +26,13 @@ func Inc( key []byte, val int64 ) int64 {
     }
 
     return cur
+}
+
+
+func Inc( key []byte, val int64 ) int64 {
+    ldb.Lock()
+    defer ldb.Unlock()
+    return IncUnsafe( key, val )
 }
 
 
