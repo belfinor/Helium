@@ -38,7 +38,7 @@ func New( code string ) Error {
 }
 
 
-func (e *Error) Error() string {
+func (e Error) Error() string {
     return e.Code + ": " + e.Text
 }
 
