@@ -2,8 +2,8 @@ package errors
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2017-06-01
+// @version 1.002
+// @date    2017-06-02
 
 
 import (
@@ -39,7 +39,7 @@ func New( code string ) Error {
 
 
 func (e Error) Error() string {
-    return e.Code + ": " + e.Text
+    return e.Code + " " + e.Text
 }
 
 
