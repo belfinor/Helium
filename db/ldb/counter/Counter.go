@@ -2,8 +2,8 @@ package counter
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2017-06-01
+// @version 1.002
+// @date    2017-06-06
 
 
 import (
@@ -38,6 +38,13 @@ func Inc( key []byte, val int64 ) int64 {
 
 func Get( key []byte ) int64 {
     raw := ldb.Get( key )
+    cur := pack.Bytes2Int(raw)
+    return cur
+}
+
+
+func GetUnsafe( key []byte ) int64 {
+    raw := ldb.GetUnsafe( key )
     cur := pack.Bytes2Int(raw)
     return cur
 }
