@@ -2,7 +2,7 @@ package jsonrpc2
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
+// @version 1.001
 // @date    2017-07-06
 
 
@@ -26,6 +26,10 @@ func Handle( in []byte ) []byte {
         } 
             
         resp = Exec( &rec )
+
+        if resp == nil {
+            return nil 
+        }
 
         out, _ := json.Marshal( resp )
         return out
