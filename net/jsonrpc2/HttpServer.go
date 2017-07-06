@@ -8,6 +8,7 @@ package jsonrpc2
 
 import (
     "fmt"
+    "github.com/belfinor/Helium/log"
     "net/http"
     "io/ioutil"
     "strconv"
@@ -35,6 +36,7 @@ func httpHandler( rw http.ResponseWriter, req *http.Request ) {
 
 func RunHttp( cfg *HttpConfig ) {
     http.HandleFunc( cfg.Url, httpHandler )
+    log.Info( "start jsonrpc2 server addr=" + cfg.Host + ":" + strconv.Itoa(cfg.Port) + " url=" + cfg.Url )
     http.ListenAndServe( cfg.Host + ":" + strconv.Itoa(cfg.Port), nil)
 }
 
