@@ -2,11 +2,12 @@ package filecache
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2017-07-13
+// @version 1.001
+// @date    2017-07-14
 
 
 import (
+    "github.com/belfinor/Helium/log"
     "github.com/golang/groupcache"
     "io/ioutil"
 )
@@ -21,6 +22,7 @@ func Init( size int64 ) {
             func(ctx groupcache.Context, key string, dst groupcache.Sink) error {
                   data, err := ioutil.ReadFile( key )
                   if err != nil {
+                      log.Error( "read file " + key + " error" ) 
                       return err
                   }
                   dst.SetBytes(data)
