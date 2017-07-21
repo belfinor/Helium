@@ -12,6 +12,26 @@ import (
 )
 
 
+func Encode( list ...interface{} ) []byte {
+    b := new(bytes.Buffer)
+    for _, item := range list {
+        binary.Write( b, binary.BigEndian, item )
+    }
+    return b.Bytes()
+}
+
+
+func Decode( data []byte, list ...interface{} ) error {
+    reader := bytes.NewReader(data)
+    for _, item := range list {
+        if err := binary.Read( reader, binary.BigEndian, item ) ; err != nil {
+            return err
+        }
+    }
+
+    return nil
+}
+
 
 func Int2Bytes( val int64 ) []byte {
     b := new(bytes.Buffer)
