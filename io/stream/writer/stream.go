@@ -20,8 +20,18 @@ type Stream struct {
 
 func New( cfg *Config ) *Stream {
   st := &Stream {
-    data: make( []byte, 0, 4098 ),
+    data:   make( []byte, 0, 4098 ),
     writer: InitWriter( cfg ),
+  }
+
+  return st
+}
+
+
+func (s *Stream) Inst() *Stream {
+  st := &Stream {
+    data:   make( []byte, 0, 4098 ),
+    writer: s.writer,
   }
 
   return st
