@@ -1,4 +1,4 @@
-package stream
+package writer
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
@@ -6,7 +6,7 @@ package stream
 // @date    2017-07-24
 
 
-type WriterConfig struct {
+type Config struct {
   Path   string `json:"path"`
   Index  string `json:"index"`
   Buffer int    `json:"buffer"`

@@ -1,4 +1,4 @@
-package stream
+package writer
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
@@ -18,11 +18,11 @@ import (
 type Writer struct {
     Input chan []byte
     File  *os.File
-    cfg   *WriterConfig
+    cfg   *Config
 }
 
 
-func InitWriter( cfg *WriterConfig ) *Writer {
+func InitWriter( cfg *Config ) *Writer {
 
   w := &Writer {
     Input: make( chan []byte, cfg.Buffer ),

@@ -1,4 +1,4 @@
-package stream
+package writer
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
@@ -18,7 +18,7 @@ type Stream struct {
 }
 
 
-func NewWriter( cfg *WriterConfig ) *Stream {
+func NewWriter( cfg *Config ) *Stream {
   st := &Stream {
     data: make( []byte, 0, 4098 ),
     writer: InitWriter( cfg ),
