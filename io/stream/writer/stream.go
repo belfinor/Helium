@@ -18,7 +18,7 @@ type Stream struct {
 }
 
 
-func NewWriter( cfg *Config ) *Stream {
+func New( cfg *Config ) *Stream {
   st := &Stream {
     data: make( []byte, 0, 4098 ),
     writer: InitWriter( cfg ),
