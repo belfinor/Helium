@@ -1,6 +1,11 @@
 package stream
 
 
+// @author  Mikhail Kirillov <mikkirillov@yandex.ru>
+// @version 1.000
+// @date    2017-07-24
+
+
 import (
   "fmt"
   "github.com/belfinor/Helium/log"
