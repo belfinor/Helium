@@ -2,8 +2,8 @@ package test
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2017-05-27
+// @version 1.001
+// @date    2017-07-26
 
 
 import (
@@ -12,7 +12,7 @@ import (
 
 
 func Init() {
-    ldb.Init( "/tmp/ldb.test" )
+    ldb.Init( &ldb.Config{ Path: "/tmp/ldb.test" } )
 
     for {
         list := ldb.List( []byte{}, 1000, 0, false )
