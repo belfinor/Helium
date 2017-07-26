@@ -12,7 +12,13 @@ import (
 )
 
 
+var sync chan int = make( chan int, 1 )
+
+
 func Inc( key []byte, val int64 ) int64 {
+
+    sync <- 1
+
     raw := ldb.Get( key )
     cur := pack.Bytes2Int( raw )
 
@@ -24,6 +30,8 @@ func Inc( key []byte, val int64 ) int64 {
     } else {
         ldb.Set( key, pack.Int2Bytes(cur) )
     }
+
+    <- sync
 
     return cur
 }
