@@ -1,10 +1,9 @@
 package ldb
 
 
-// @author  Mikhail Kirillov
-// @email   mikkirillov@yandex.ru
-// @version 1.001
-// @date    2017-05-26
+// @author  Mikhail Kirillov <mikkirillov@yandex.ru>
+// @version 1.002
+// @date    2017-07-26
 
 
 import (
@@ -12,12 +11,10 @@ import (
     "github.com/syndtr/goleveldb/leveldb/opt"
     "github.com/syndtr/goleveldb/leveldb/util"
     "github.com/belfinor/Helium/log"
-    "sync"
 )
 
 
 type DB struct {
-    sync.Mutex
     dbpath string
     ldb *leveldb.DB
 }
@@ -58,7 +55,16 @@ func Init( base string ) {
 }
 
 
-func SetUnsafe( key []byte, value []byte) {
+func Source() *leveldb.DB {
+  if _db == nil {
+    return nil
+  }
+
+  return _db.ldb
+}
+
+
+func Set( key []byte, value []byte) {
     if value == nil || len(value) == 0 {
         _db.ldb.Delete( key, nil )
     } else {
@@ -67,15 +73,7 @@ func SetUnsafe( key []byte, value []byte) {
 }
 
 
-func Set( key []byte, value []byte ) {
-    _db.Lock()
-    defer _db.Unlock()
-
-    SetUnsafe( key, value )
-}
-
-
-func GetUnsafe( key []byte ) []byte {
+func Get( key []byte ) []byte {
     val, err := _db.ldb.Get( key, nil )
 
     if err != nil {
@@ -86,37 +84,12 @@ func GetUnsafe( key []byte ) []byte {
 }
 
 
-func Get( key []byte ) []byte {
-    _db.Lock()
-    defer _db.Unlock()
-
-    return GetUnsafe( key )
-}
-
-
 func Del( key []byte ) {
-    _db.Lock()
-    defer _db.Unlock()
-    DelUnsafe( key )
-}
-
-
-func DelUnsafe( key []byte ) {
     _db.ldb.Delete(key, nil)
 }
 
 
-func Lock() {
-    _db.Lock()
-}
-
-
-func Unlock() {
-    _db.Unlock()
-}
-
-
-func TotalUnsafe( prefix []byte) int64 {
+func Total( prefix []byte) int64 {
 
     iter := _db.ldb.NewIterator(util.BytesPrefix(prefix), nil)
     defer iter.Release()
@@ -131,14 +104,7 @@ func TotalUnsafe( prefix []byte) int64 {
 }
 
 
-func Total( prefix []byte ) int64 {
-    _db.Lock()
-    defer _db.Unlock()
-    return TotalUnsafe( prefix )
-}
-
-
-func ListUnsafe( prefix []byte, limit int, offset int, RemovePrefix bool ) [][]byte {
+func List( prefix []byte, limit int, offset int, RemovePrefix bool ) [][]byte {
 
     iter := _db.ldb.NewIterator(util.BytesPrefix(prefix), nil)
     defer iter.Release()
@@ -175,21 +141,7 @@ func ListUnsafe( prefix []byte, limit int, offset int, RemovePrefix bool ) [][]b
 }
 
 
-func List( prefix []byte, limit int, offset int, RemovePrefix bool ) [][]byte {
-    _db.Lock()
-    defer _db.Unlock()
-    return ListUnsafe( prefix, limit, offset, RemovePrefix )
-}
-
-
 func ForEachKey( prefix []byte, limit int, offset int, RemovePrefix bool, fn FOR_EACH_KEY_FUNC ) {
-    _db.Lock()
-    defer _db.Unlock()
-    ForEachKeyUnsafe( prefix, limit, offset, RemovePrefix, fn )
-}
-
-
-func ForEachKeyUnsafe( prefix []byte, limit int, offset int, RemovePrefix bool, fn FOR_EACH_KEY_FUNC ) {
 
     iter := _db.ldb.NewIterator(util.BytesPrefix(prefix), nil)
     defer iter.Release()

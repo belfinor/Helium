@@ -40,10 +40,7 @@ func TestDB( t *testing.T ) {
         }
     }
 
-    Lock()
-    defer Unlock()
-
-    res = GetUnsafe( key )
+    res = Get( key )
 
     if res == nil || len(res) != len(val) {
         t.Fatal( "db.Get error" )
