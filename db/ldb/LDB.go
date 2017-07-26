@@ -42,6 +42,7 @@ func EnableSnappy( f bool ) {
 // must set before Init
 func SetTableSize( mb int ) {
     opt.DefaultCompactionTableSize = mb * opt.MiB
+    opt.DefaultWriteBuffer = 2 *mb * opt.MiB;
 }
 
 
