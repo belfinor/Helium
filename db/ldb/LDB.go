@@ -35,10 +35,12 @@ func Init( cfg *Config ) {
             comp = opt.SnappyCompression
         }
 
+        size := cfg.FileSize * 1024 * 1024
+
         log.Info( "open database: " + cfg.Path )
         _db.ldb,_ = leveldb.OpenFile( cfg.Path, &opt.Options{ 
-            CompactionTableSize: cfg.FileSize,
-            WriteBuffer:         cfg.FileSize * 2,
+            CompactionTableSize: size,
+            WriteBuffer:         size * 2,
             Compression:         comp,
         } )   
     }
