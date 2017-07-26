@@ -52,7 +52,7 @@ func Init( base string ) {
         }
 
         log.Info( "open database: " + base )
-        _db.ldb,_ = leveldb.OpenFile(base,nil)   
+        _db.ldb,_ = leveldb.OpenFile(base, &opt.Options{ CompactionTableSize: opt.DefaultCompactionTableSize, Compression: opt.DefaultCompressionType } )   
     }
 }
 
