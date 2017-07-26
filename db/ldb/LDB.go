@@ -15,7 +15,6 @@ import (
 
 
 type DB struct {
-    dbpath string
     ldb *leveldb.DB
 }
 
@@ -26,31 +25,22 @@ type FOR_EACH_KEY_FUNC func([]byte) bool
 var _db *DB
 
 
-// must set before Init
-func EnableSnappy( f bool ) {
-    if f {
-      opt.DefaultCompressionType = opt.SnappyCompression
-    } else {
-      opt.DefaultCompressionType = opt.NoCompression
-    }
-}
-
-
-// must set before Init
-func SetTableSize( mb int ) {
-    opt.DefaultCompactionTableSize = mb * opt.MiB
-    opt.DefaultWriteBuffer = 2 *mb * opt.MiB;
-}
-
-
-func Init( base string ) {
+func Init( cfg *Config ) {
     if _db == nil {
         _db = &DB{
-            dbpath: base,
         }
 
-        log.Info( "open database: " + base )
-        _db.ldb,_ = leveldb.OpenFile(base, &opt.Options{ CompactionTableSize: opt.DefaultCompactionTableSize, Compression: opt.DefaultCompressionType } )   
+        comp := opt.NoCompression
+        if cfg.Compression {
+            comp = opt.SnappyCompression
+        }
+
+        log.Info( "open database: " + cfg.Path )
+        _db.ldb,_ = leveldb.OpenFile( cfg.Path, &opt.Options{ 
+            CompactionTableSize: cfg.FileSize,
+            WriteBuffer:         cfg.FileSize * 2,
+            Compression:         comp,
+        } )   
     }
 }
 

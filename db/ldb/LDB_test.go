@@ -13,7 +13,7 @@ import (
 
 
 func TestDB( t *testing.T ) {
-    Init( "/tmp/helium.test" )
+    Init( &Config{ Path: "/tmp/helium.test" } )
     
     key := []byte( "test.key" )
     val := []byte{ 1, 2, 3 }
