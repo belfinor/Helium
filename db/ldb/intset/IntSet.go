@@ -2,14 +2,17 @@ package intset
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2017-06-08
+// @version 1.001
+// @date    2017-07-26
 
 
 import (
     "github.com/belfinor/Helium/db/ldb"
     "github.com/belfinor/Helium/pack"
 )
+
+
+var sync chan int = make( chan int, 1 )
 
 
 func Create( key []byte, list ...int64 ) {
@@ -27,10 +30,10 @@ func Remove( key []byte ) {
 
 
 func Push( key []byte, list ...int64 ) {
-    ldb.Lock()
-    defer ldb.Unlock()
 
-    items := pack.Bytes2IntList( ldb.GetUnsafe( key ) )
+    sync <- 1
+
+    items := pack.Bytes2IntList( ldb.Get( key ) )
 
     for _, val := range list {
         has := false
@@ -47,15 +50,17 @@ func Push( key []byte, list ...int64 ) {
         }
     }
 
-    ldb.SetUnsafe( key, pack.IntList2Bytes( items ) )
+    ldb.Set( key, pack.IntList2Bytes( items ) )
+
+    <- sync
 }
 
 
 func Pop( key []byte, list ...int64 ) {
-    ldb.Lock()
-    defer ldb.Unlock()
 
-    items := pack.Bytes2IntList( ldb.GetUnsafe( key ) )
+    sync <- 1
+
+    items := pack.Bytes2IntList( ldb.Get( key ) )
     res   := make( []int64, 0, len(items) )
 
     for _, val := range items {
@@ -73,7 +78,9 @@ func Pop( key []byte, list ...int64 ) {
         }
     }
 
-    ldb.SetUnsafe( key, pack.IntList2Bytes( res ) )
+    ldb.Set( key, pack.IntList2Bytes( res ) )
+
+    <- sync
 }
 
 
