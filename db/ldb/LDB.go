@@ -2,8 +2,8 @@ package ldb
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2017-07-26
+// @version 1.003
+// @date    2017-07-28
 
 
 import (
@@ -31,16 +31,19 @@ func Init( cfg *Config ) {
         }
 
         comp := opt.NoCompression
+        mul  := 1
         if cfg.Compression {
             comp = opt.SnappyCompression
+            mul = 2
         }
 
         size := cfg.FileSize * 1024 * 1024
+        
 
         log.Info( "open database: " + cfg.Path )
         _db.ldb,_ = leveldb.OpenFile( cfg.Path, &opt.Options{ 
             CompactionTableSize: size,
-            WriteBuffer:         size * 2,
+            WriteBuffer:         size * mul,
             Compression:         comp,
         } )   
     }
