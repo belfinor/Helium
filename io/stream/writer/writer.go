@@ -42,11 +42,13 @@ func InitWriter( cfg *Config ) *Writer {
 
 func (w *Writer) openLog() {
 
-  file_name := fmt.Sprintf( "%s/%d", w.cfg.Path, w.cfg.LogId )
+  file_name := fmt.Sprintf( "%s/%d.tmp", w.cfg.Path, w.cfg.LogId )
   var err error
 
   if w.File != nil {
     w.File.Close()
+    last_name := fmt.Sprintf( "%s/%d", w.cfg.Path, w.cfg.LogId - 1 )
+    os.Rename( last_name + ".tmp", last_name )
   }
 
   if w.File, err = os.OpenFile( file_name, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0664 ) ; err != nil {
