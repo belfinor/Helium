@@ -37,7 +37,6 @@ func (c *Config ) LoadLogId() {
     if c.LogId, err = strconv.ParseInt( str, 10, 64 ) ; err != nil {
       return
     }
-    c.LogId++
   }
 }
 
