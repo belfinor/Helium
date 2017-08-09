@@ -2,8 +2,8 @@ package ldb
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.003
-// @date    2017-07-28
+// @version 1.004
+// @date    2017-08-09
 
 
 import (
@@ -75,6 +75,15 @@ func Get( key []byte ) []byte {
         return nil
     }
 
+    return val
+}
+
+
+func Has( key []byte ) bool {
+    val, err := _db.ldb.Has( key, nil )
+    if err != nil {
+      return false
+    }
     return val
 }
 

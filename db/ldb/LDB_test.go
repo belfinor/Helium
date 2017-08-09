@@ -3,8 +3,8 @@ package ldb
 
 // @author  Mikhail Kirillov
 // @email   mikkirillov@yandex.ru
-// @version 1.000
-// @date    2017-05-18
+// @version 1.001
+// @date    2017-08-09
 
 
 import (
@@ -26,12 +26,20 @@ func TestDB( t *testing.T ) {
         t.Fatal( "expecting nil value" )
     }
 
+    if Has(key) {
+        t.Fatal( "Has not working" )
+    }
+
     Set( key, val )
 
     res = Get( key )
 
     if res == nil || len(res) != len(val) {
         t.Fatal( "db.Get error" )
+    }
+
+    if !Has(key) {
+        t.Fatal( "Has not work" )
     }
 
     for i, c := range res {
