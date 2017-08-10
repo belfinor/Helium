@@ -20,6 +20,7 @@ type DB struct {
 
 
 type FOR_EACH_KEY_FUNC func([]byte) bool
+type FOR_EACH_FUNC func([]byte,[]byte) bool
 
 
 var _db *DB
@@ -142,6 +143,31 @@ func List( prefix []byte, limit int, offset int, RemovePrefix bool ) [][]byte {
     }
 
     return res
+}
+
+
+func ForEach( prefix []byte, RemovePrefix bool, fn FOR_EACH_FUNC ) {
+
+    iter := _db.ldb.NewIterator(util.BytesPrefix(prefix), nil)
+    defer iter.Release()
+
+    list := make( []byte, 4096 )
+    var size int
+
+    for iter.Next() {
+
+        if( RemovePrefix ) {
+            size = len( iter.Key() ) - len(prefix)
+            copy( list, ( iter.Key() )[ len(prefix) : ] )
+        } else {
+            size = len( iter.Key() )
+            copy( list, iter.Key() )
+        }
+
+        if !fn(list[:size], iter.Value() ) {
+            return
+        }
+    }
 }
 
 
