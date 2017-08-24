@@ -3,8 +3,8 @@ package text
 
 // @author  Mikhail Kirillov
 // @email   mikkirillov@yandex.ru
-// @version 1.000
-// @date    2017-05-20
+// @version 1.001
+// @date    2017-08-24
 
 
 
@@ -45,5 +45,46 @@ func MakePrefSuf( str string ) [][]string {
     list = append( list, []string{ prefix, "" } )
 
     return list
+}
+
+
+func SubStrDiffVal( str string, minlen int ) map[string]int {
+
+  runes := make( []string, 0, 20 )
+
+  for _, r := range str {
+    runes = append( runes, string(r) )
+  }
+
+  if minlen < 3 {
+    minlen = 3
+  }
+
+  size := len(runes)
+  res := make( map[string]int )
+
+  if size < minlen {
+    return res
+  }
+
+  for {
+    clen := len(runes)
+    data := runes
+
+    if clen < minlen {
+      break
+    }
+
+    for clen >= minlen {
+      cstr := strings.Join( data, "" )
+      res[cstr] = 100000 - clen * 100000 / size
+      data = data[:clen-1]
+      clen--
+    }
+
+    runes = runes[1:]
+  }
+
+  return res
 }
 
