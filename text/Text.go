@@ -48,7 +48,7 @@ func MakePrefSuf( str string ) [][]string {
 }
 
 
-func SubStrDiffVal( str string, minlen int ) map[string]int {
+func SubStrDistVal( str string, minlen int ) map[string]int {
 
   runes := make( []string, 0, 20 )
 
@@ -77,7 +77,7 @@ func SubStrDiffVal( str string, minlen int ) map[string]int {
 
     for clen >= minlen {
       cstr := strings.Join( data, "" )
-      res[cstr] = 100000 - clen * 100000 / size
+      res[cstr] = size - clen
       data = data[:clen-1]
       clen--
     }
