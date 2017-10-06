@@ -12,7 +12,10 @@ import (
 
 
 func TestClient( t *testing.T) {
-  res, err := Request( "GET", "https://morphs.ru", nil, nil )
+
+  www := New()
+
+  res, err := www.Request( "GET", "https://morphs.ru", nil, nil )
 
   if err != nil {
     t.Fatal( "send request error" )

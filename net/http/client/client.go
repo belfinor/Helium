@@ -18,6 +18,9 @@ import (
 
 
 type Client struct {
+  Timeout   time.Duration
+  UserAgent string
+  NoDecode  bool
 }
 
 
@@ -33,9 +36,13 @@ type Response struct {
 }
 
 
-func Request( method string, url string, headers map[string]string, content []byte ) ( *Response, error ) {
+func (c *Client) Request( method string, url string, headers map[string]string, content []byte ) ( *Response, error ) {
 
   timeout := time.Duration(5 * time.Second)
+
+  if c.Timeout > 0 {
+    timeout = c.Timeout
+  }
 
   tr := &http.Transport{
      TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -58,20 +65,31 @@ func Request( method string, url string, headers map[string]string, content []by
     req.Header.Set( k, v )
   }
 
+  if c.UserAgent != "" {
+    req.Header.Set( "User-Agent", c.UserAgent )
+  }
+
   resp, err := ua.Do( req )
 
   defer resp.Body.Close()
 
-  utf8, err1 := charset.NewReader(resp.Body, resp.Header.Get("Content-Type"))
-  if err1 != nil {
-    return nil, err1
-  }
-
   var text []byte
+ 
+  if c.NoDecode {
+    text, err = ioutil.ReadAll(resp.Body)
+    if err != nil {
+      return nil, err
+    }
+  } else {
+    utf8, err1 := charset.NewReader(resp.Body, resp.Header.Get("Content-Type"))
+    if err1 != nil {
+      return nil, err1
+    }
 
-  text, err = ioutil.ReadAll(utf8)
-  if err != nil {
-    return nil, err
+    text, err = ioutil.ReadAll(utf8)
+    if err != nil {
+      return nil, err
+    }
   }
 
   r := &Response {
