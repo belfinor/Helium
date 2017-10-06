@@ -1,6 +1,11 @@
 package client
 
 
+// @author  Mikhail Kirillov <mikkirillov@yandex.ru>
+// @version 1.000
+// @date    2017-10-06
+
+
 import (
   "bytes"
   "crypto/tls"
