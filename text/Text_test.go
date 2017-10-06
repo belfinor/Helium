@@ -1,11 +1,9 @@
 package text
 
 
-// @author  Mikhail Kirillov
-// @email   mikkirillov@yandex.ru
-// @version 1.000
-// @date    2017-05-20
-
+// @author  Mikhail Kirillov <mikkirillov@yandex.ru>
+// @version 1.001
+// @date    2017-10-06
 
 
 import (
@@ -29,6 +27,20 @@ func TestTextGetWords( t *testing.T ) {
             t.Fatal( "invalid item in slice" )
         }
     }
+}
+
+
+func TestGetPrefixes( t *testing.T ) {
+  wait := []string{ "т", "те", "тес", "тест" }
+  res  := GetPrefixes( "тест" )
+  if len(wait) != len(res) {
+    t.Fatal( "invalid result length" )
+  }
+  for i, v := range res {
+    if wait[i] != v {
+      t.Fatal( "invalid value: " + wait[i] )
+    }
+  }
 }
 
 

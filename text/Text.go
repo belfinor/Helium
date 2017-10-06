@@ -1,10 +1,9 @@
 package text
 
 
-// @author  Mikhail Kirillov
-// @email   mikkirillov@yandex.ru
-// @version 1.001
-// @date    2017-08-24
+// @author  Mikhail Kirillov <mikkirillov@yandex.ru>
+// @version 1.002
+// @date    2017-10-06
 
 
 
@@ -26,6 +25,19 @@ func GetWords( text string ) []string {
     }
 
     return words
+}
+
+
+func GetPrefixes( str string ) []string {
+  list := make( []string, 0, 16 )
+  prefix := ""
+
+  for _, c := range str {
+    prefix = prefix + string(c)
+    list = append( list, prefix )
+  }
+
+  return list
 }
 
 
