@@ -2,18 +2,15 @@ package sociation
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2017-09-20
+// @version 1.001
+// @date    2017-10-07
 
 
 import (
   "encoding/json"
-  "io/ioutil"
-  "net/http"
   "net/url"
-  "golang.org/x/net/html/charset"
-  "strings"
   "github.com/belfinor/Helium/log"
+  "github.com/belfinor/Helium/net/http/client"
 )
 
 
@@ -30,49 +27,30 @@ type SociumResp struct {
 
 func Get( phrase string ) []string {
 
-  client := http.Client{}
-
   form := url.Values{}
 
   form.Add( "max_count", "0" )
   form.Add( "back", "false" )
   form.Add( "word", phrase )
 
-  req, err := http.NewRequest("POST", "http://sociation.org/ajax/word_associations/", strings.NewReader(form.Encode()))
+  content := form.Encode()
+
+  headers := map[string]string{
+    "Content-Type": "application/x-www-form-urlencoded",
+    "Referer": "http://sociation.org/graph/",
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
+  }
+
+
+  res, err := client.New().Request( "POST", "http://sociation.org/ajax/word_associations/", headers , []byte(content) )
   if err != nil {
-    log.Error( "sociation: " + err.Error() )
+    log.Error( err.Error() )
     return []string{}
   }
 
-  req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-  req.Header.Add("Referer", "http://sociation.org/graph/")
-  req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36")
-
-  res, err1 := client.Do( req )
-
-  if err1 != nil {
-    log.Error( "sociation: " + err1.Error() )
-    return []string{}
-  }
-
-  defer res.Body.Close()
-
-  utf8, err := charset.NewReader(res.Body, res.Header.Get("Content-Type"))
-  if err != nil {
-    log.Error( "sociation: " + err.Error() )
-    return []string{}
-  }
-
-  var text []byte
-
-  text, err = ioutil.ReadAll(utf8)
-  if err != nil {
-    log.Debug( "sociation: " + err.Error() )
-    return []string{}
-  }
 
   var resp SociumResp
-  if err = json.Unmarshal( text, &resp ) ; err != nil {
+  if err = json.Unmarshal( res.Content, &resp ) ; err != nil {
     log.Error( err.Error() )
     return []string{}
   }
