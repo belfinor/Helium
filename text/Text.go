@@ -30,7 +30,9 @@ func GetWords( text string ) []string {
 
 func Truncate( text string, limit int ) string {
   result := ""
-  for i, rune := range text {
+  i := 0
+  for _, rune := range text {
+    i++
     if i >= limit {
       result += "..."
       break
