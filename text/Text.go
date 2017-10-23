@@ -28,6 +28,19 @@ func GetWords( text string ) []string {
 }
 
 
+func Truncate( text string, limit int ) string {
+  result := ""
+  for i, rune := range text {
+    if i >= limit {
+      result += "..."
+      break
+    }
+    result += string(rune)
+  }
+  return result
+}
+
+
 func GetPrefixes( str string ) []string {
   list := make( []string, 0, 16 )
   prefix := ""
