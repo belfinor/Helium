@@ -70,6 +70,9 @@ func (c *Client) Request( method string, url string, headers map[string]string, 
   }
 
   resp, err := ua.Do( req )
+  if err != nil {
+    return nil, err
+  }
 
   defer resp.Body.Close()
 
