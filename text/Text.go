@@ -2,8 +2,8 @@ package text
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2017-10-06
+// @version 1.003
+// @date    2017-10-27
 
 
 
@@ -17,7 +17,7 @@ func GetWords( text string ) []string {
     src   := strings.ToLower(text) 
     src    =  strings.Replace( src, "ё", "е", -1 )
     
-    re,_  := regexp.Compile( "([a-z]+|\\d+|[а-я]+)" )
+    re,_  := regexp.Compile( "([a-z]+(?:\\-[a-z]+|\\-\\d+)?|\\d+(?:\\.\\d+)*|[а-я]+(?:\\-[a-я]+|\\-\\d+)?)" )
     words := re.FindAllString(src,-1)
 
     if words == nil {
