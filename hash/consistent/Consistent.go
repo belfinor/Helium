@@ -3,7 +3,7 @@ package consistent
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
 // @version 1.000
-// @date    2017-07-28
+// @date    2017-11-01
 
 
 import (
@@ -35,5 +35,10 @@ func (h *Hash) Get( key []byte ) int {
   }
 
   return num
+}
+
+
+func (h *Hash) Next( num int ) int {
+  return ( num + 1 ) % h.num
 }
 
