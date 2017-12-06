@@ -2,8 +2,8 @@ package ldb
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.004
-// @date    2017-08-09
+// @version 1.005
+// @date    2017-12-06
 
 
 import (
@@ -46,6 +46,7 @@ func Init( cfg *Config ) {
             CompactionTableSize: size,
             WriteBuffer:         size * mul,
             Compression:         comp,
+            ReadOnly:            cfg.ReadOnly,
         } )   
     }
 }
