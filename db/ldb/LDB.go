@@ -2,8 +2,8 @@ package ldb
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.005
-// @date    2017-12-06
+// @version 1.006
+// @date    2017-12-07
 
 
 import (
@@ -49,6 +49,14 @@ func Init( cfg *Config ) {
             ReadOnly:            cfg.ReadOnly,
         } )   
     }
+}
+
+
+func Close() {
+  if _db != nil {
+    _db.ldb.Close()
+    _db = nil
+  }
 }
 
 
