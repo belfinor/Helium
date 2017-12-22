@@ -1,8 +1,7 @@
 package log
 
 
-// @author  Mikhail Kirillov
-// @email   mikkirillov@yandex.ru
+// @author  Mikhail Kirillov <mikkirillov@yandex.ru>
 // @version 1.003
 // @date    2017-05-29
 
@@ -124,6 +123,8 @@ func logWriter() {
 
 func Fatal( str string ) {
     logger( "fatal", str )
+    <- time.After( time.Second * 2 )
+    os.Exit(1)
 }
 
 
