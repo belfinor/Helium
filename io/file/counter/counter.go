@@ -7,9 +7,11 @@ package counter
 
 
 import (
+  "github.com/belfinor/Helium/time/strftime"
   "io/ioutil"
   "strconv"
   "strings"
+  "time"
 )
 
 
@@ -58,6 +60,13 @@ func (c *Counter) Set( val int64 ) {
 
 func (c *Counter) Inc() {
   c.val++
+  c.Flush()
+}
+
+
+func (c *Counter) SetDate( t time.Time ) {
+  str := strftime.Format( "%Y%m%d", t )
+  c.val, _ = strconv.ParseInt( str, 10, 64 )
   c.Flush()
 }
 
