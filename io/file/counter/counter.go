@@ -70,3 +70,8 @@ func (c *Counter) SetDate( t time.Time ) {
   c.Flush()
 }
 
+
+func (c *Counter) Get() int64 {
+  return c.val
+}
+
