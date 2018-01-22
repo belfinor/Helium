@@ -2,11 +2,13 @@ package boltdb
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
+// @version 1.001
 // @date    2018-01-22
 
 
 import (
+  "bytes"
+  "errors"
   "github.com/belfinor/Helium/log"
   "github.com/boltdb/bolt"
   "os"
@@ -17,6 +19,9 @@ import (
 type DB struct {
   db *bolt.DB
 }
+
+
+type FETCH_CALLBACK func (key, value []byte) bool
 
 
 func Open( cfg *Config ) ( *DB, error ) {
@@ -80,6 +85,66 @@ func (db *DB) Delete( bucket, key []byte ) {
     }
 
     return b.Delete( key )
+  } )
+}
+
+
+func (db *DB) Prefix( bucket, prefix []byte, f FETCH_CALLBACK ) {
+
+  db.db.View( func (tx *bolt.Tx) error {
+
+    c := tx.Bucket(bucket).Cursor()
+
+    for k, v := c.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = c.Next() {
+
+      if !f( k, v ) {
+        break
+      } 
+
+    }
+
+    return nil
+
+  } )
+
+}
+
+
+func (db *DB) Range( bucket, from, to []byte, f FETCH_CALLBACK ) {
+
+  db.db.View( func (tx *bolt.Tx) error {
+
+    c := tx.Bucket(bucket).Cursor()
+
+    for k, v := c.Seek(from); k != nil && bytes.Compare(k, to) <= 0; k, v = c.Next() {
+
+      if !f( k, v ) {
+        break
+      } 
+
+    }
+
+    return nil
+
+  } )
+
+}
+
+
+func (db *DB) ForEach( bucket []byte, f FETCH_CALLBACK ) {
+
+  db.db.View( func (tx *bolt.Tx) error {
+
+    c := tx.Bucket(bucket)
+    c.ForEach( func ( k, v []byte ) error {
+      if !f(k,v ) {
+        return errors.New( "stop iteration" )
+      }
+      return nil
+    } )
+
+    return nil
+
   } )
 }
 
