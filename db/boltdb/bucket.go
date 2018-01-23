@@ -57,3 +57,20 @@ func (b *Bucket) Prefix( prefix []byte, f FETCH_CALLBACK ) {
   }
 }
 
+
+func (b *Bucket) Bucket( name string ) ( *Bucket, error ) {
+  bb, err := b.b.CreateBucketIfNotExists( []byte(name) )
+  if err != nil {
+    return nil, err
+  }
+
+  bucket := &Bucket{ b: bb }
+
+  return bucket, nil
+}
+
+
+func (b *Bucket) DeleteBucket( name string ) error {
+  return b.b.DeleteBucket( []byte(name) ) 
+}
+
