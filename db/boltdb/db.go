@@ -2,8 +2,8 @@ package boltdb
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-01-22
+// @version 1.002
+// @date    2018-01-23
 
 
 import (
@@ -22,6 +22,7 @@ type DB struct {
 
 
 type FETCH_CALLBACK func (key, value []byte) bool
+type TRANSACTION_CALLBACK func (tx *Tx) error
 
 
 func Open( cfg *Config ) ( *DB, error ) {
@@ -145,6 +146,15 @@ func (db *DB) ForEach( bucket []byte, f FETCH_CALLBACK ) {
 
     return nil
 
+  } )
+}
+
+
+func (db *DB) Transaction( f TRANSACTION_CALLBACK ) {
+
+  db.db.Update( func (tx *bolt.Tx) error {
+    tr := &Tx{ tx: tx  }
+    return f(tr)
   } )
 }
 
