@@ -15,3 +15,20 @@ type Tx struct {
   tx *bolt.Tx
 }
 
+
+func (tx *Tx) Bucket( name string ) ( *Bucket, error ) {
+  b, err := tx.tx.CreateBucketIfNotExists( []byte(name) )
+  if err != nil {
+    return nil, err
+  }
+
+  bucket := &Bucket{ b: b }
+
+  return bucket, nil
+}
+
+
+func (tx *Tx ) DeleteBucket( name string ) error {
+  return tx.tx.DeleteBucket( []byte(name) ) 
+}
+
