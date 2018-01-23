@@ -2,7 +2,7 @@ package boltdb
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
+// @version 1.002
 // @date    2018-01-23
 
 
@@ -72,5 +72,11 @@ func (b *Bucket) Bucket( name string ) ( *Bucket, error ) {
 
 func (b *Bucket) DeleteBucket( name string ) error {
   return b.b.DeleteBucket( []byte(name) ) 
+}
+
+
+func (b *Bucket) NextId() int64 {
+  id, _ := b.b.NextSequence()
+  return int64(id)
 }
 

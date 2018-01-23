@@ -2,7 +2,7 @@ package boltdb
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
+// @version 1.003
 // @date    2018-01-23
 
 
@@ -74,6 +74,26 @@ func (db *DB) Set( bucket, key, value []byte ) {
 
     return b.Put( key, value )
   } )
+}
+
+
+func (db *DB) NextId( bucket, key, value []byte ) int64 {
+
+  var id int64
+
+  db.db.Update( func (tx *bolt.Tx) error {
+
+    b, err := tx.CreateBucketIfNotExists(bucket)
+    if err != nil {
+        return err
+    }
+
+    i, err := b.NextSequence()
+    id = int64(i)
+    return err
+  } )
+
+  return id
 }
 
 
