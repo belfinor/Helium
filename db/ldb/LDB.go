@@ -2,8 +2,8 @@ package ldb
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.006
-// @date    2017-12-07
+// @version 1.007
+// @date    2018-02-07
 
 
 import (
@@ -24,6 +24,9 @@ type FOR_EACH_FUNC func([]byte,[]byte) bool
 
 
 var _db *DB
+
+
+var proxyConfig *Config
 
 
 func Init( cfg *Config ) {
@@ -57,6 +60,25 @@ func Close() {
     _db.ldb.Close()
     _db = nil
   }
+}
+
+
+func InitProxy( cfg *Config ) {
+  proxyConfig = cfg
+}
+
+
+func Use( base string ) {
+
+  cfg := &Config{
+    Path:        proxyConfig.Path + "/" + base,
+    FileSize:    proxyConfig.FileSize,
+    Compression: proxyConfig.Compression,
+    ReadOnly:    proxyConfig.ReadOnly,
+  }
+
+  Close()
+  Init( cfg )
 }
 
 
