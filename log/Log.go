@@ -2,8 +2,8 @@ package log
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.003
-// @date    2017-05-29
+// @version 1.004
+// @date    2018-02-16
 
 
 import (
@@ -125,6 +125,12 @@ func Fatal( str string ) {
     logger( "fatal", str )
     <- time.After( time.Second * 2 )
     os.Exit(1)
+}
+
+
+func Finish( str string ) {
+    logger( "info", str )
+    <-time.After( time.Second * 2 )
 }
 
 
