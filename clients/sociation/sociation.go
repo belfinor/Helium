@@ -16,6 +16,8 @@ import (
 
 type SociumRec struct {
   Name string `json:"name"`
+  Direct int64 `json:"popularity_direct"`
+  Inverse int64 `json:"popularity_inverse"`
 }
 
 
@@ -48,7 +50,6 @@ func Get( phrase string ) []string {
     return []string{}
   }
 
-
   var resp SociumResp
   if err = json.Unmarshal( res.Content, &resp ) ; err != nil {
     log.Error( err.Error() )
@@ -70,5 +71,39 @@ func Get( phrase string ) []string {
   }
 
   return result
+}
+
+
+func GetFull( phrase string ) []SociumRec {
+
+  form := url.Values{}
+
+  form.Add( "max_count", "0" )
+  form.Add( "back", "false" )
+  form.Add( "word", phrase )
+
+  content := form.Encode()
+
+  headers := map[string]string{
+    "Content-Type": "application/x-www-form-urlencoded",
+    "Referer": "http://sociation.org/graph/",
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
+  }
+
+
+  res, err := client.New().Request( "POST", "http://sociation.org/ajax/word_associations/", headers , []byte(content) )
+  if err != nil {
+    log.Error( err.Error() )
+    return nil
+  }
+
+  var resp SociumResp
+  if err = json.Unmarshal( res.Content, &resp ) ; err != nil {
+    log.Error( err.Error() )
+    return nil
+  }
+
+  return resp.Associations
+
 }
 
