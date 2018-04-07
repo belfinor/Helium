@@ -2,22 +2,24 @@ package counter
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.003
-// @date    2017-07-26
+// @version 1.004
+// @date    2018-04-07
 
 
 import (
     "github.com/belfinor/Helium/db/ldb"
     "github.com/belfinor/Helium/pack"
+    "sync"
 )
 
 
-var sync chan int = make( chan int, 1 )
+var mutex sync.Mutex
 
 
 func Inc( key []byte, val int64 ) int64 {
 
-    sync <- 1
+    mutex.Lock()
+    defer mutex.Unlock()
 
     raw := ldb.Get( key )
     cur := pack.Bytes2Int( raw )
@@ -30,8 +32,6 @@ func Inc( key []byte, val int64 ) int64 {
     } else {
         ldb.Set( key, pack.Int2Bytes(cur) )
     }
-
-    <- sync
 
     return cur
 }
