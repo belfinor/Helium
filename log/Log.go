@@ -2,8 +2,8 @@ package log
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.004
-// @date    2018-02-16
+// @version 1.005
+// @date    2018-04-14
 
 
 import (
@@ -36,9 +36,10 @@ var _log_levels map[string]int = map[string]int{
     "none":  0,
     "fatal": 1,
     "error": 2,
-    "info":  3,
-    "debug": 4,
-    "trace": 5,
+    "warn":  3,
+    "info":  4,
+    "debug": 5,
+    "trace": 6,
 }
 
 
@@ -146,6 +147,11 @@ func Info( str string ) {
 
 func Debug( str string ) {
     logger( "debug", str )
+}
+
+
+func Warn( str string ) {
+    logger( "warn", str )
 }
 
 
