@@ -2,8 +2,8 @@ package counter
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.004
-// @date    2018-04-07
+// @version 1.005
+// @date    2018-04-26
 
 
 import (
@@ -45,11 +45,19 @@ func Get( key []byte ) int64 {
 
 
 func Reset( key []byte ) {
+
+    mutex.Lock()
+    defer mutex.Unlock()
+
     ldb.Del( key )
 }
 
 
 func Set( key []byte, val int64 ) {
+
+    mutex.Lock()
+    defer mutex.Unlock()
+
     if val <= int64(0) {
         ldb.Del( key )
     } else {
