@@ -2,8 +2,8 @@ package params
 
 
 // @author  MIkhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.0.0
-// @date    2017-10-19
+// @version 1.0.1
+// @date    2018-04-27
 
 
 import (
@@ -61,5 +61,20 @@ func (p Params) GetString( name string ) string {
   }
 
   return data[0]
+}
+
+
+func (p Params) GetFloat( name string ) float64 {
+  data, has := p[name]
+  if !has || data == nil || len(data) == 0 {
+    return 0
+  }
+
+  v, err := strconv.ParseFloat( data[0], 64 )
+  if err != nil {
+    return 0
+  }
+
+  return v
 }
 
