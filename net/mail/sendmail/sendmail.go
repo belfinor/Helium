@@ -1,6 +1,11 @@
 package sendmail
 
 
+// @author  Mikhail Kirillov <mikkirillov@yandex.ru>
+// @version 1.001
+// @date    2018-05-17
+
+
 import (
   "crypto/md5"
   "encoding/base64"
@@ -75,11 +80,11 @@ func Send( mail *Mail ) {
       if attach.Content, err = ioutil.ReadFile( attach.Name ) ; err != nil {
         panic( "read file " + attach.Name + " error" )
       }
-      
     }
 
     encoded := base64.StdEncoding.EncodeToString(attach.Content)
 
+    msg += "--" + boundary + "\n"
     msg += "Content-Type: application/octet-stream; name=\"" + name + "\"\n"
     msg += "Content-Transfer-Encoding: base64\n";
     msg += "Content-Disposition: attachment; filename=\"" + name + "\"\n";
