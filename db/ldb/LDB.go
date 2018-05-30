@@ -2,8 +2,8 @@ package ldb
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.007
-// @date    2018-02-07
+// @version 1.008
+// @date    2018-05-30
 
 
 import (
@@ -42,16 +42,35 @@ func Init( cfg *Config ) {
         }
 
         size := cfg.FileSize * 1024 * 1024
-        
 
         log.Info( "open database: " + cfg.Path )
-        _db.ldb,_ = leveldb.OpenFile( cfg.Path, &opt.Options{ 
+        _db.ldb,_ = leveldb.OpenFile( cfg.Path, &opt.Options{
             CompactionTableSize: size,
             WriteBuffer:         size * mul,
             Compression:         comp,
             ReadOnly:            cfg.ReadOnly,
-        } )   
+        } )
     }
+}
+
+
+func TestInit() {
+
+  log.TestInit()
+
+  cfg := &Config{ Path: "/var/tmp/ldb_test", Compression: true, FileSize: 16, ReadOnly: false }
+  Init( cfg )
+
+  for {
+    list := List( []byte{}, 1000, 0, false )
+    for _, key := range list {
+      Del( key )
+    }
+
+    if len(list) < 1000 {
+      break
+    }
+  }
 }
 
 
