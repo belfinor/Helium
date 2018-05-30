@@ -2,8 +2,8 @@ package log
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.005
-// @date    2018-04-14
+// @version 1.006
+// @date    2018-05-30
 
 
 import (
@@ -64,9 +64,9 @@ func Init( c *Config ) {
 
         input = make( chan string, 1024 )
         lastCheck = time.Now().Unix()
- 
+
         SetLevel( c.Level )
-       
+
         if _config.Save > 0 {
             rm_name := strftime.Format( _config.Template, time.Unix( lastCheck - int64(_config.Save * _config.Period), 0 ) )
             os.Remove(rm_name)
@@ -74,6 +74,16 @@ func Init( c *Config ) {
 
         go logWriter()
     }
+}
+
+
+func TestInit() {
+  if _config == nil {
+    _config = &Config{ Template: "test.log", Period: 86400, Save: 20, Level: "none" }
+    input = make( chan string, 1024 )
+    lastCheck = time.Now().Unix()
+    SetLevel( "none" )
+  }
 }
 
 
