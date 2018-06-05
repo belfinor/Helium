@@ -8,6 +8,7 @@ package xmlrpc
 
 import (
     "bytes"
+    "crypto/tls"
     "encoding/base64"
     "encoding/xml"
     "fmt"
@@ -20,6 +21,10 @@ import (
     "time"
 )
 
+
+var DefaultTimeout int = 5
+
+
 func Request(url string, method string, params ...interface{}) ([]interface{}) {
 
   request := Serialize(method, params)
@@ -27,7 +32,18 @@ func Request(url string, method string, params ...interface{}) ([]interface{}) {
 
   buffer := bytes.NewBuffer([]byte(request))
 
-  response, err := http.Post(url, "text/xml", buffer)
+  timeout := time.Duration(time.Duration(DefaultTimeout) * time.Second)
+
+  tr := &http.Transport{
+     TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+  }
+
+  ua := &http.Client{
+    Timeout:   timeout, 
+    Transport: tr,
+  }
+
+  response, err := ua.Post(url, "text/xml", buffer)
   if err != nil {
     log.Error(err.Error())
     return nil
