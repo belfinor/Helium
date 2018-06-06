@@ -2,11 +2,12 @@ package log
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.006
-// @date    2018-05-30
+// @version 1.007
+// @date    2018-06-06
 
 
 import (
+    "fmt"
     "github.com/belfinor/Helium/time/strftime"
     "os"
     "time"
@@ -26,10 +27,11 @@ type Config struct {
 
 
 var _config *Config
-var input chan string
+var input chan string = make( chan string, 1024 )
 var fh *os.File
 var filename string
-var lastCheck int64
+var lastCheck int64 = time.Now().Unix()
+var eofc chan bool = make( chan bool )
 
 
 var _log_levels map[string]int = map[string]int{
@@ -43,10 +45,10 @@ var _log_levels map[string]int = map[string]int{
 }
 
 
-func logger( level string, text string ) {
+func logger( level string, text interface{} ) {
     code, ok := _log_levels[level]
     if ok && code <= _log_level {
-        input <-  level + "| " + text
+        input <-  level + "| " + fmt.Sprint(text)
     }
 }
 
@@ -61,9 +63,6 @@ func Init( c *Config ) {
         if fh, err = os.OpenFile(filename, os.O_RDWR | os.O_APPEND | os.O_CREATE, 0755) ; err != nil {
             panic(err)
         }
-
-        input = make( chan string, 1024 )
-        lastCheck = time.Now().Unix()
 
         SetLevel( c.Level )
 
@@ -80,9 +79,8 @@ func Init( c *Config ) {
 func TestInit() {
   if _config == nil {
     _config = &Config{ Template: "test.log", Period: 86400, Save: 20, Level: "none" }
-    input = make( chan string, 1024 )
-    lastCheck = time.Now().Unix()
     SetLevel( "none" )
+    go logWriter()
   }
 }
 
@@ -98,14 +96,14 @@ func logRotate() {
 
     if new_name != filename {
         fh.Close()
-                
+
         var err error
-        filename = new_name       
-         
+        filename = new_name
+
         if fh, err = os.OpenFile(filename, os.O_RDWR | os.O_APPEND | os.O_CREATE, 0755) ; err != nil {
             panic(err)
         }
-                
+
         if _config.Save > 0 {
             rm_name := strftime.Format( _config.Template, time.Unix( lastCheck - int64(_config.Save * _config.Period), 0 ) )
             os.Remove(rm_name)
@@ -117,55 +115,63 @@ func logRotate() {
 func logWriter() {
     for {
         select {
-        
+
         case str := <- input:
-            logRotate()    
-   
+
+            if str == "eof" {
+              eofc <- true
+              return
+            }
+
+            logRotate()
+
             fh.WriteString( strftime.Format( "%Y-%m-%d %H:%M:%S", time.Now() ) + "|" + str + "\n" )
             fh.Sync()
- 
+
         case <- time.After( time.Minute ):
-            logRotate()    
+            logRotate()
         }
     }
 }
 
 
 
-func Fatal( str string ) {
+func Fatal( str interface{} ) {
     logger( "fatal", str )
-    <- time.After( time.Second * 2 )
+    input <- "eof"
+    <- eofc
     os.Exit(1)
 }
 
 
-func Finish( str string ) {
+func Finish( str interface{} ) {
     logger( "info", str )
-    <-time.After( time.Second * 2 )
+    input <- "eof"
+    <- eofc
 }
 
 
-func Error( str string ) {
+func Error( str interface{} ) {
     logger( "error", str )
 }
 
 
-func Info( str string ) {
+func Info( str interface{} ) {
     logger( "info", str )
 }
 
 
-func Debug( str string ) {
+func Debug( str interface{} ) {
     logger( "debug", str )
 }
 
 
-func Warn( str string ) {
+func Warn( str interface{} ) {
     logger( "warn", str )
 }
 
 
-func Trace( str string ) {
+func Trace( str interface{} ) {
     logger( "trace", str )
 }
 
