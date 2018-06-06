@@ -11,6 +11,7 @@ import (
     "github.com/syndtr/goleveldb/leveldb/opt"
     "github.com/syndtr/goleveldb/leveldb/util"
     "github.com/belfinor/Helium/log"
+    "os/exec"
 )
 
 
@@ -58,19 +59,11 @@ func TestInit() {
 
   log.TestInit()
 
+  args :=  "rm -rf /var/tmp/ldb_test"
+  exec.Command( "sh", "-c", args ).Run()
+
   cfg := &Config{ Path: "/var/tmp/ldb_test", Compression: true, FileSize: 16, ReadOnly: false }
   Init( cfg )
-
-  for {
-    list := List( []byte{}, 1000, 0, false )
-    for _, key := range list {
-      Del( key )
-    }
-
-    if len(list) < 1000 {
-      break
-    }
-  }
 }
 
 
