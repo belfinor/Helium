@@ -14,7 +14,7 @@ import (
 )
 
 
-var _log_level int = 0
+var logLevel int = 0
 
 
 type Config struct {
@@ -22,11 +22,13 @@ type Config struct {
     Period   int    `json:"period"`
     Save     int    `json:"save"`
     Level    string `json:"level"`
+    StdOut   bool   `json:"stdout"`
+    StdErr   bool   `json:"stderr"`
 }
 
 
 
-var _config *Config
+var conf *Config
 var input chan string = make( chan string, 1024 )
 var fh *os.File
 var filename string
@@ -34,7 +36,7 @@ var lastCheck int64 = time.Now().Unix()
 var eofc chan bool = make( chan bool )
 
 
-var _log_levels map[string]int = map[string]int{
+var logLevels map[string]int = map[string]int{
     "none":  0,
     "fatal": 1,
     "error": 2,
@@ -46,8 +48,8 @@ var _log_levels map[string]int = map[string]int{
 
 
 func logger( level string, strs ...interface{} ) {
-    code, ok := _log_levels[level]
-    if ok && code <= _log_level {
+    code, ok := logLevels[level]
+    if ok && code <= logLevel {
         for text := range strs {
           input <-  level + "| " + fmt.Sprint(text)
         }
@@ -56,9 +58,9 @@ func logger( level string, strs ...interface{} ) {
 
 
 func Init( c *Config ) {
-    if _config == nil {
+    if conf == nil {
 
-        _config = c
+        conf = c
         filename = strftime.Format( c.Template, time.Now() )
         var err error
 
@@ -68,8 +70,8 @@ func Init( c *Config ) {
 
         SetLevel( c.Level )
 
-        if _config.Save > 0 {
-            rm_name := strftime.Format( _config.Template, time.Unix( lastCheck - int64(_config.Save * _config.Period), 0 ) )
+        if conf.Save > 0 {
+            rm_name := strftime.Format( conf.Template, time.Unix( lastCheck - int64(conf.Save * conf.Period), 0 ) )
             os.Remove(rm_name)
         }
 
@@ -79,8 +81,8 @@ func Init( c *Config ) {
 
 
 func TestInit() {
-  if _config == nil {
-    _config = &Config{ Template: "test.log", Period: 86400, Save: 20, Level: "none" }
+  if conf == nil {
+    conf = &Config{ Template: "test.log", Period: 86400, Save: 20, Level: "none" }
     SetLevel( "none" )
     go logWriter()
   }
@@ -94,7 +96,7 @@ func logRotate() {
     }
 
     lastCheck = time.Now().Unix()
-    new_name := strftime.Format( _config.Template, time.Now() )
+    new_name := strftime.Format( conf.Template, time.Now() )
 
     if new_name != filename {
         fh.Close()
@@ -106,8 +108,8 @@ func logRotate() {
             panic(err)
         }
 
-        if _config.Save > 0 {
-            rm_name := strftime.Format( _config.Template, time.Unix( lastCheck - int64(_config.Save * _config.Period), 0 ) )
+        if conf.Save > 0 {
+            rm_name := strftime.Format( conf.Template, time.Unix( lastCheck - int64(conf.Save * conf.Period), 0 ) )
             os.Remove(rm_name)
         }
     }
@@ -127,8 +129,19 @@ func logWriter() {
 
             logRotate()
 
-            fh.WriteString( strftime.Format( "%Y-%m-%d %H:%M:%S", time.Now() ) + "|" + str + "\n" )
+            str = strftime.Format( "%Y-%m-%d %H:%M:%S", time.Now() ) + "|" + str + "\n"
+            fh.WriteString( str )
             fh.Sync()
+
+            if conf.StdOut {
+              os.Stdout.WriteString( str )
+              os.Stdout.Sync()
+            }
+
+            if conf.StdErr {
+              os.Stderr.WriteString( str )
+              os.Stderr.Sync()
+            }
 
         case <- time.After( time.Minute ):
             logRotate()
@@ -179,19 +192,19 @@ func Trace( str ...interface{} ) {
 
 
 func SetLevel( level string ) {
-    code, ok := _log_levels[level]
+    code, ok := logLevels[level]
 
     if ok {
-        _log_level = code
+        logLevel = code
     } else {
-        _log_level = 0
+        logLevel = 0
     }
 }
 
 
 func GetLevel() string {
-    for code, level := range _log_levels {
-        if level == _log_level {
+    for code, level := range logLevels {
+        if level == logLevel {
             return code
         }
     }
