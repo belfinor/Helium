@@ -47,10 +47,10 @@ var logLevels map[string]int = map[string]int{
 }
 
 
-func logger( level string, strs ...interface{} ) {
+func logger( level string, strs []interface{} ) {
     code, ok := logLevels[level]
     if ok && code <= logLevel {
-        for text := range strs {
+        for _, text := range strs {
           input <-  level + "| " + fmt.Sprint(text)
         }
     }
