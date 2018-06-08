@@ -2,8 +2,8 @@ package log
 
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.007
-// @date    2018-06-06
+// @version 1.008
+// @date    2018-06-08
 
 
 import (
@@ -45,10 +45,12 @@ var _log_levels map[string]int = map[string]int{
 }
 
 
-func logger( level string, text interface{} ) {
+func logger( level string, strs ...interface{} ) {
     code, ok := _log_levels[level]
     if ok && code <= _log_level {
-        input <-  level + "| " + fmt.Sprint(text)
+        for text := range strs {
+          input <-  level + "| " + fmt.Sprint(text)
+        }
     }
 }
 
@@ -136,7 +138,7 @@ func logWriter() {
 
 
 
-func Fatal( str interface{} ) {
+func Fatal( str ...interface{} ) {
     logger( "fatal", str )
     input <- "eof"
     <- eofc
@@ -144,34 +146,34 @@ func Fatal( str interface{} ) {
 }
 
 
-func Finish( str interface{} ) {
+func Finish( str ...interface{} ) {
     logger( "info", str )
     input <- "eof"
     <- eofc
 }
 
 
-func Error( str interface{} ) {
+func Error( str ...interface{} ) {
     logger( "error", str )
 }
 
 
-func Info( str interface{} ) {
+func Info( str ...interface{} ) {
     logger( "info", str )
 }
 
 
-func Debug( str interface{} ) {
+func Debug( str ...interface{} ) {
     logger( "debug", str )
 }
 
 
-func Warn( str interface{} ) {
+func Warn( str ...interface{} ) {
     logger( "warn", str )
 }
 
 
-func Trace( str interface{} ) {
+func Trace( str ...interface{} ) {
     logger( "trace", str )
 }
 
