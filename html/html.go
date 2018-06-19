@@ -1,190 +1,181 @@
 package html
 
-
 // @author  Mikhail Kirillov
 // @email   mikkirillov@yandex.ru
 // @version 1.000
 // @date    2017-05-22
 
-
 import (
-    "bytes"
-    ht "golang.org/x/net/html"
-    "io"
+	"bytes"
+	ht "golang.org/x/net/html"
+	"io"
 )
 
-
 type HTML struct {
-    Links      map[string]bool
-    TagErase   map[string]bool
-    TagStack   []string
-    EraseStack []string
-    Document   string
-    Text       string
+	Links      map[string]bool
+	TagErase   map[string]bool
+	TagStack   []string
+	EraseStack []string
+	Document   string
+	Text       string
 }
-
 
 func NewHtmlParser() *HTML {
-    res := &HTML{}
+	res := &HTML{}
 
-    res.Links = make( map[string]bool )
-    
-    res.TagErase = map[string]bool{
-        "form":    true,
-        "iframe":  true,
-        "link":    true,
-        "meta":    true,
-        "noscript":true,
-        "option":  true,
-        "script":  true,
-        "select":  true,
-        "style":   true,
-    }
+	res.Links = make(map[string]bool)
 
-    res.TagStack   = make( []string, 0 )
-    res.EraseStack = make( []string, 0 )
+	res.TagErase = map[string]bool{
+		"form":     true,
+		"iframe":   true,
+		"link":     true,
+		"meta":     true,
+		"noscript": true,
+		"option":   true,
+		"script":   true,
+		"select":   true,
+		"style":    true,
+	}
 
-    res.Document = ""
-    res.Text = ""
+	res.TagStack = make([]string, 0)
+	res.EraseStack = make([]string, 0)
 
-    return res
+	res.Document = ""
+	res.Text = ""
+
+	return res
 }
-
 
 func (h *HTML) ProcessString(str string) string {
-    r := bytes.NewReader( []byte(str) )
-    return h.ProcessReader(r)
+	r := bytes.NewReader([]byte(str))
+	return h.ProcessReader(r)
 }
 
-func (h *HTML) ProcessReader( r io.Reader ) string {
+func (h *HTML) ProcessReader(r io.Reader) string {
 
-    parser := ht.NewTokenizer(r)
+	parser := ht.NewTokenizer(r)
 
-    
-    for {
-        tt := parser.Next()
+	for {
+		tt := parser.Next()
 
-        switch {
-        case tt == ht.ErrorToken:
-            return h.Text
+		switch {
+		case tt == ht.ErrorToken:
+			return h.Text
 
-        case tt == ht.StartTagToken:
-            t := parser.Token()
-            h.onStartTag(&t, string(parser.Raw()))
+		case tt == ht.StartTagToken:
+			t := parser.Token()
+			h.onStartTag(&t, string(parser.Raw()))
 
-        case tt == ht.EndTagToken:
-            t := parser.Token()
-            h.onCloseTag(&t)
+		case tt == ht.EndTagToken:
+			t := parser.Token()
+			h.onCloseTag(&t)
 
-        case tt == ht.SelfClosingTagToken:
-            t := parser.Token()
-            h.onStartTag(&t, string(parser.Raw()))
-            h.onCloseTag(&t)
-        
-        case tt == ht.TextToken:
-            h.onText( string(parser.Text()), string(parser.Raw()) )
+		case tt == ht.SelfClosingTagToken:
+			t := parser.Token()
+			h.onStartTag(&t, string(parser.Raw()))
+			h.onCloseTag(&t)
 
-        }
-    }
+		case tt == ht.TextToken:
+			h.onText(string(parser.Text()), string(parser.Raw()))
 
-    return h.Text
+		}
+	}
+
+	return h.Text
 }
 
-func (h *HTML) onStartTag( t *ht.Token, raw string ) {
+func (h *HTML) onStartTag(t *ht.Token, raw string) {
 
-    if len(h.EraseStack) > 0 {
-        h.EraseStack = append( h.EraseStack, t.Data )
-        return
-    }
+	if len(h.EraseStack) > 0 {
+		h.EraseStack = append(h.EraseStack, t.Data)
+		return
+	}
 
-    _, found := h.TagErase[ t.Data ]
+	_, found := h.TagErase[t.Data]
 
-    if found {
-        if t.Data != "meta" && t.Data != "link" {
-            h.EraseStack = append( h.EraseStack, t.Data )
-        }
-        return
-    }
+	if found {
+		if t.Data != "meta" && t.Data != "link" {
+			h.EraseStack = append(h.EraseStack, t.Data)
+		}
+		return
+	}
 
-    h.TagStack = append( h.TagStack, t.Data )
+	h.TagStack = append(h.TagStack, t.Data)
 
-    if t.Data == "a" {
-        for _, a := range t.Attr {
-            if a.Key == "href" {
-                h.Links[ a.Val ] = true
-            }
-        }
-    }
+	if t.Data == "a" {
+		for _, a := range t.Attr {
+			if a.Key == "href" {
+				h.Links[a.Val] = true
+			}
+		}
+	}
 
-    h.Document += raw
+	h.Document += raw
 }
 
+func (h *HTML) onCloseTag(t *ht.Token) {
 
-func (h *HTML) onCloseTag( t *ht.Token ) {
+	elen := len(h.EraseStack)
 
-    elen := len(h.EraseStack)
+	if elen > 0 {
 
-    if elen > 0 {
+		if h.EraseStack[elen-1] == t.Data {
+			h.EraseStack = h.EraseStack[0 : elen-1]
+			return
+		}
 
-        if h.EraseStack[elen-1] == t.Data {
-            h.EraseStack = h.EraseStack[0:elen-1]
-            return
-        }
+		pos := -1
 
-        pos := -1
+		for i, cur := range h.EraseStack {
+			if cur == t.Data {
+				pos = i
+			}
+		}
 
-        for i, cur := range h.EraseStack {
-            if cur == t.Data {
-                pos = i
-            }
-        }
+		if pos > -1 {
+			h.EraseStack = h.EraseStack[0:pos]
+		}
 
-        if pos > -1 {
-            h.EraseStack = h.EraseStack[0:pos]
-        }
+		return
+	}
 
-        return
-    }
-    
-    elen = len(h.TagStack)
+	elen = len(h.TagStack)
 
-    if len(h.TagStack) > 0 {
-        
-        if( h.TagStack[elen-1] == t.Data ) {
-            h.Document += "</" + t.Data + ">"
-            h.TagStack = h.TagStack[0:elen-1]
-            return
-        }
+	if len(h.TagStack) > 0 {
 
-        _, found := h.TagErase[t.Data]
-        if found {
-            return
-        }
+		if h.TagStack[elen-1] == t.Data {
+			h.Document += "</" + t.Data + ">"
+			h.TagStack = h.TagStack[0 : elen-1]
+			return
+		}
 
-        pos := -1
+		_, found := h.TagErase[t.Data]
+		if found {
+			return
+		}
 
-        for i, cur := range h.TagStack {
-            if cur == t.Data {
-                pos = i
-            }
-        }
+		pos := -1
 
-        if pos > -1 {
-            
-            for i := elen - 1 ; i >= pos ; i-- {
-                h.Document += "</" + h.TagStack[i] + ">"
-            }
+		for i, cur := range h.TagStack {
+			if cur == t.Data {
+				pos = i
+			}
+		}
 
-            h.TagStack = h.TagStack[0:pos]
-        }
-    }
+		if pos > -1 {
+
+			for i := elen - 1; i >= pos; i-- {
+				h.Document += "</" + h.TagStack[i] + ">"
+			}
+
+			h.TagStack = h.TagStack[0:pos]
+		}
+	}
 }
 
-
-func (h *HTML) onText( str string, raw string ) {
-    if len(h.EraseStack) == 0 {
-        h.Document += raw
-        h.Text += " " + str
-    }
+func (h *HTML) onText(str string, raw string) {
+	if len(h.EraseStack) == 0 {
+		h.Document += raw
+		h.Text += " " + str
+	}
 }
-

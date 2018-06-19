@@ -1,113 +1,104 @@
 package writer
 
-
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
 // @version 1.000
 // @date    2017-07-24
 
-
 import (
-  "fmt"
-  "github.com/belfinor/Helium/log"
-  "io/ioutil"
-  "os"
-  "time"
+	"fmt"
+	"github.com/belfinor/Helium/log"
+	"io/ioutil"
+	"os"
+	"time"
 )
 
-
 type Writer struct {
-    Input chan []byte
-    File  *os.File
-    cfg   *Config
+	Input chan []byte
+	File  *os.File
+	cfg   *Config
 }
 
+func InitWriter(cfg *Config) *Writer {
 
-func InitWriter( cfg *Config ) *Writer {
+	w := &Writer{
+		Input: make(chan []byte, cfg.Buffer),
+		cfg:   cfg,
+	}
 
-  w := &Writer {
-    Input: make( chan []byte, cfg.Buffer ),
-    cfg: cfg,
-  }
+	w.openLog()
 
-  w.openLog()
+	log.Info(fmt.Sprintf("storage current file=%s/%d", cfg.Path, cfg.LogId))
+	log.Info(fmt.Sprintf("storage buffer size=%d", cfg.Buffer))
 
-  log.Info( fmt.Sprintf( "storage current file=%s/%d", cfg.Path, cfg.LogId ) )
-  log.Info( fmt.Sprintf( "storage buffer size=%d", cfg.Buffer ) )
+	go w.Writer()
 
-  go w.Writer()
-
-  return w
+	return w
 }
-
 
 func (w *Writer) openLog() {
 
-  file_name := fmt.Sprintf( "%s/%d.tmp", w.cfg.Path, w.cfg.LogId )
-  var err error
+	file_name := fmt.Sprintf("%s/%d.tmp", w.cfg.Path, w.cfg.LogId)
+	var err error
 
-  if w.File != nil {
-    w.File.Close()
-    last_name := fmt.Sprintf( "%s/%d", w.cfg.Path, w.cfg.LogId - 1 )
-    os.Rename( last_name + ".tmp", last_name )
-  }
+	if w.File != nil {
+		w.File.Close()
+		last_name := fmt.Sprintf("%s/%d", w.cfg.Path, w.cfg.LogId-1)
+		os.Rename(last_name+".tmp", last_name)
+	}
 
-  if w.File, err = os.OpenFile( file_name, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0664 ) ; err != nil {
-    log.Error( err.Error() )
-    panic(err)
-  }
+	if w.File, err = os.OpenFile(file_name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0664); err != nil {
+		log.Error(err.Error())
+		panic(err)
+	}
 
-  ioutil.WriteFile( w.cfg.Index, []byte( fmt.Sprintf( "%d", w.cfg.LogId ) ), 664 )
+	ioutil.WriteFile(w.cfg.Index, []byte(fmt.Sprintf("%d", w.cfg.LogId)), 664)
 
-  log.Info( "start log " + file_name )
+	log.Info("start log " + file_name)
 }
-
 
 func (w *Writer) rotate() {
 
-  w.cfg.LogId++
+	w.cfg.LogId++
 
-  w.openLog()
+	w.openLog()
 
-  remove_name := fmt.Sprintf( "%s/%d", w.cfg.Path, w.cfg.LogId - w.cfg.Save )
-  os.Remove( remove_name )
+	remove_name := fmt.Sprintf("%s/%d", w.cfg.Path, w.cfg.LogId-w.cfg.Save)
+	os.Remove(remove_name)
 }
 
+func (w *Writer) Push(data []byte) {
+	if data == nil || len(data) <= 2 {
+		return
+	}
 
-func (w *Writer) Push( data []byte ) {
-  if data == nil ||  len(data) <= 2 {
-    return  
-  }
+	block := make([]byte, len(data))
+	copy(block, data)
 
-  block := make( []byte, len(data) )
-  copy( block, data )
-
-  w.Input <- block
+	w.Input <- block
 }
-
 
 func (w *Writer) Writer() {
-  log.Info( "start storage writer" )
+	log.Info("start storage writer")
 
-  start  := time.Now().Unix()
-  last   := start
+	start := time.Now().Unix()
+	last := start
 
-  period := w.cfg.Period
+	period := w.cfg.Period
 
-  for {
-    select {
-      case data := <- w.Input:
-        if _, err := w.File.Write( data ) ; err != nil {
-          panic(err)
-        }
-      case <- time.After( time.Second ):
-    }
+	for {
+		select {
+		case data := <-w.Input:
+			if _, err := w.File.Write(data); err != nil {
+				panic(err)
+			}
+		case <-time.After(time.Second):
+		}
 
-    last = time.Now().Unix()
+		last = time.Now().Unix()
 
-    if last - start >= period {
-      w.rotate()
-      start = last
-    }
-  }
+		if last-start >= period {
+			w.rotate()
+			start = last
+		}
+	}
 }
-
