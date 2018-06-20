@@ -1,13 +1,11 @@
 package dateparse
 
-
 import (
 	"fmt"
 	"strconv"
 	"time"
 	"unicode"
 )
-
 
 type dateState int
 
@@ -56,7 +54,6 @@ const (
 	stateWeekdayAbbrevCommaOffset
 	stateWeekdayAbbrevCommaOffsetZone
 )
-
 
 var (
 	shortDates = []string{"01/02/2006", "1/2/2006", "06/01/02", "01/02/06", "1/2/06"}

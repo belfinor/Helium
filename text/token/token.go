@@ -1,117 +1,111 @@
 package token
 
-
 // @author  Mikhail Kirillov
 // @email   mikkirillov@yandex.ru
 // @version 1.000
 // @date    2017-05-20
 
- 
-
 var mapper map[byte]byte = map[byte]byte{
-    '\\' : '\\',
-    '\'' : '\'',
-    '"'  : '"',
-    's'  : ' ',
-    't'  : '\t',
-    'r'  : '\r',
-    'n'  : '\n',
-    ' '  : ' ',
+	'\\': '\\',
+	'\'': '\'',
+	'"':  '"',
+	's':  ' ',
+	't':  '\t',
+	'r':  '\r',
+	'n':  '\n',
+	' ':  ' ',
 }
 
-
-func isSpace( c byte ) bool {
-    return c == ' ' || c == '\t' || c == '\n' || c == '\r'
+func isSpace(c byte) bool {
+	return c == ' ' || c == '\t' || c == '\n' || c == '\r'
 }
 
+func Make(str string) []string {
 
-func Make( str string ) []string {    
-    
-    tokens := make( []string, 0, 10 )
-    mode := 0
-    bkmode := 0
-    cur  := []byte{}
+	tokens := make([]string, 0, 10)
+	mode := 0
+	bkmode := 0
+	cur := []byte{}
 
-    for i := 0 ; i < len(str) ; i++ {
-        
-        c := str[i]
+	for i := 0; i < len(str); i++ {
 
-        switch mode {
-        case 0:
-            if isSpace(c) {
-                continue
-            }
+		c := str[i]
 
-            if c == '"' {
-                mode = 1
-                cur = []byte{}
-                continue 
-            }
+		switch mode {
+		case 0:
+			if isSpace(c) {
+				continue
+			}
 
-            cur = []byte{ c }
-            mode = 2
+			if c == '"' {
+				mode = 1
+				cur = []byte{}
+				continue
+			}
 
-        case 1:
+			cur = []byte{c}
+			mode = 2
 
-            if c == '"' {
-                mode = 4
-                tokens = append( tokens, string(cur) )
-                continue
-            }
+		case 1:
 
-            if c == '\\' {
-                mode = 3
-                bkmode = 1
-                continue
-            }
+			if c == '"' {
+				mode = 4
+				tokens = append(tokens, string(cur))
+				continue
+			}
 
-            cur = append( cur, c )
+			if c == '\\' {
+				mode = 3
+				bkmode = 1
+				continue
+			}
 
-        case 2:
-            
-            if isSpace(c) {
-                tokens = append( tokens, string(cur) )
-                mode = 0
-                continue
-            }
+			cur = append(cur, c)
 
-            if c == '\\' {
-                mode = 3
-                bkmode = 2
-                continue
-            }
+		case 2:
 
-            cur = append( cur, c )
+			if isSpace(c) {
+				tokens = append(tokens, string(cur))
+				mode = 0
+				continue
+			}
 
-        case 3:
-            
-             nc, ok := mapper[c] 
+			if c == '\\' {
+				mode = 3
+				bkmode = 2
+				continue
+			}
 
-             if !ok {
-                 return nil
-             }
+			cur = append(cur, c)
 
-             cur = append( cur, nc )
-             mode = bkmode
+		case 3:
 
-        case 4:
-             if isSpace(c) {
-                 mode = 0
-                 continue
-             }
+			nc, ok := mapper[c]
 
-             return nil
-        }
-    }
+			if !ok {
+				return nil
+			}
 
-    if mode == 1 || mode == 3 {
-        return nil
-    }
+			cur = append(cur, nc)
+			mode = bkmode
 
-    if mode == 2 {
-        tokens = append( tokens, string(cur) )
-    }
+		case 4:
+			if isSpace(c) {
+				mode = 0
+				continue
+			}
 
-    return tokens
+			return nil
+		}
+	}
+
+	if mode == 1 || mode == 3 {
+		return nil
+	}
+
+	if mode == 2 {
+		tokens = append(tokens, string(cur))
+	}
+
+	return tokens
 }
-

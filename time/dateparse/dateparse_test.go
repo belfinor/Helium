@@ -1,6 +1,5 @@
 package dateparse
 
-
 import (
 	"fmt"
 	"testing"
@@ -483,6 +482,3 @@ func testDidPanic(datestr string) (paniced bool) {
 	MustParse(datestr)
 	return false
 }
-
-
-

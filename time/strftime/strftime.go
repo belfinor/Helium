@@ -1,37 +1,33 @@
 package strftime
 
-
 // @author  Mikhail Kirillov
 // @email   mikkirillov@yandex.ru
 // @version 1.000
 // @date    2017-05-22
-
 
 import (
 	"strings"
 	"time"
 )
 
-
 var conversion = map[rune]string{
-  'B': "January",
-  'b': "Jan",
-  'm': "01",
-  'A': "Monday",
-  'a': "Mon",
-  'd': "02",
-  'H': "15",
-  'I': "03",
-  'M': "04",
-  'S': "05",
-  'Y': "2006",
-  'y': "06",
-  'p': "PM",
-  'Z': "MST",
-  'z': "-0700",
-  'L': ".000",
+	'B': "January",
+	'b': "Jan",
+	'm': "01",
+	'A': "Monday",
+	'a': "Mon",
+	'd': "02",
+	'H': "15",
+	'I': "03",
+	'M': "04",
+	'S': "05",
+	'Y': "2006",
+	'y': "06",
+	'p': "PM",
+	'Z': "MST",
+	'z': "-0700",
+	'L': ".000",
 }
-
 
 func Format(format string, t time.Time) string {
 	retval := make([]byte, 0, len(format))
@@ -62,4 +58,3 @@ func Format(format string, t time.Time) string {
 	}
 	return string(retval)
 }
-

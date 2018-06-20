@@ -1,126 +1,118 @@
 package sendmail
 
-
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
 // @version 1.001
 // @date    2018-05-17
 
-
 import (
-  "crypto/md5"
-  "encoding/base64"
-  "fmt"
-  "github.com/belfinor/Helium/log"
-  "github.com/belfinor/Helium/pack"
-  "io/ioutil"
-  "os/exec"
-  "regexp"
-  "strings"
-  "time"
+	"crypto/md5"
+	"encoding/base64"
+	"fmt"
+	"github.com/belfinor/Helium/log"
+	"github.com/belfinor/Helium/pack"
+	"io/ioutil"
+	"os/exec"
+	"regexp"
+	"strings"
+	"time"
 )
 
-
 var Util string = "/usr/sbin/sendmail"
-var Args string ="-t"
-
+var Args string = "-t"
 
 type Attachment struct {
-  Name    string
-  Content []byte
-  IsFile  bool
+	Name    string
+	Content []byte
+	IsFile  bool
 }
-
 
 type Mail struct {
-  From        string
-  To          []string
-  Subject     string
-  Message     string
-  ContentType string
-  Attachments []*Attachment
+	From        string
+	To          []string
+	Subject     string
+	Message     string
+	ContentType string
+	Attachments []*Attachment
 }
 
+func Send(mail *Mail) {
+	list := strings.Join(mail.To, ", ")
 
-func Send( mail *Mail ) {
-  list := strings.Join( mail.To, ", " )
+	num := 0
+	boundary := make_boundary(num)
 
-  num := 0
-  boundary := make_boundary(num)
+	msg := ""
+	if mail.From != "" {
+		msg += "From: " + mail.From + "\n"
+	}
 
-  msg := ""
-  if mail.From != "" {
-    msg += "From: " + mail.From + "\n"
-  }
+	msg += "To: " + list + "\n"
+	msg += "Subject: " + mail.Subject + "\n"
+	msg += "Mime-Version: 1.0\n"
 
-  msg += "To: " + list + "\n"
-  msg += "Subject: " + mail.Subject + "\n"
-  msg += "Mime-Version: 1.0\n"
- 
-  msg += "Content-Type: multipart/mixed; boundary=\"" + boundary + "\"\n"
-  msg += "\n"
-  msg += "--" + boundary + "\n"
- 
-  if mail.ContentType == "" {
-    msg += "Content-Type: text/plain; charset=utf-8\n"
-  } else {
-    msg += "Content-Type: " + mail.ContentType + "\n"
-  }
+	msg += "Content-Type: multipart/mixed; boundary=\"" + boundary + "\"\n"
+	msg += "\n"
+	msg += "--" + boundary + "\n"
 
-  msg += "\n"
-  msg += mail.Message + "\n"
+	if mail.ContentType == "" {
+		msg += "Content-Type: text/plain; charset=utf-8\n"
+	} else {
+		msg += "Content-Type: " + mail.ContentType + "\n"
+	}
 
-  re := regexp.MustCompile( "[^/]+$" )
+	msg += "\n"
+	msg += mail.Message + "\n"
 
-  for _, attach := range mail.Attachments {
-    name := attach.Name
-    if attach.IsFile {
-      list := re.FindAllStringSubmatch( name, 1 )
-      name = list[0][0]
-      var err error
-      if attach.Content, err = ioutil.ReadFile( attach.Name ) ; err != nil {
-        panic( "read file " + attach.Name + " error" )
-      }
-    }
+	re := regexp.MustCompile("[^/]+$")
 
-    encoded := base64.StdEncoding.EncodeToString(attach.Content)
+	for _, attach := range mail.Attachments {
+		name := attach.Name
+		if attach.IsFile {
+			list := re.FindAllStringSubmatch(name, 1)
+			name = list[0][0]
+			var err error
+			if attach.Content, err = ioutil.ReadFile(attach.Name); err != nil {
+				panic("read file " + attach.Name + " error")
+			}
+		}
 
-    msg += "--" + boundary + "\n"
-    msg += "Content-Type: application/octet-stream; name=\"" + name + "\"\n"
-    msg += "Content-Transfer-Encoding: base64\n";
-    msg += "Content-Disposition: attachment; filename=\"" + name + "\"\n";
-    msg += "\n";
-    msg += encoded + "\n"
-  }
+		encoded := base64.StdEncoding.EncodeToString(attach.Content)
 
-  msg += "--" + boundary + "--\n"
-  msg += ".\n"
+		msg += "--" + boundary + "\n"
+		msg += "Content-Type: application/octet-stream; name=\"" + name + "\"\n"
+		msg += "Content-Transfer-Encoding: base64\n"
+		msg += "Content-Disposition: attachment; filename=\"" + name + "\"\n"
+		msg += "\n"
+		msg += encoded + "\n"
+	}
 
-  log.Trace( "send mail:\n" + msg )
+	msg += "--" + boundary + "--\n"
+	msg += ".\n"
 
-  util := exec.Command( Util, Args )
-  stdin, err := util.StdinPipe()
+	log.Trace("send mail:\n" + msg)
 
-  if err != nil {
-    log.Error( "sendmail error: " + err.Error() )
-    return
-  }
+	util := exec.Command(Util, Args)
+	stdin, err := util.StdinPipe()
 
-  if err = util.Start() ; err != nil {
-    log.Error( "sendmail error: " + err.Error() )
-    return
-  }
-  
-  if _, err = stdin.Write( []byte(msg) ) ; err != nil {
-    log.Error( "sendmail error: " + err.Error() )
-    return
-  }
+	if err != nil {
+		log.Error("sendmail error: " + err.Error())
+		return
+	}
 
-  stdin.Close()
-  util.Wait()
+	if err = util.Start(); err != nil {
+		log.Error("sendmail error: " + err.Error())
+		return
+	}
+
+	if _, err = stdin.Write([]byte(msg)); err != nil {
+		log.Error("sendmail error: " + err.Error())
+		return
+	}
+
+	stdin.Close()
+	util.Wait()
 }
 
-
-func make_boundary( num int ) string {
-  return fmt.Sprintf("%x%d", md5.Sum( pack.Encode( time.Now().UnixNano() ) ), num )
+func make_boundary(num int) string {
+	return fmt.Sprintf("%x%d", md5.Sum(pack.Encode(time.Now().UnixNano())), num)
 }
-
