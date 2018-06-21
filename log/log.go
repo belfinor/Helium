@@ -1,33 +1,16 @@
 package log
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.008
-// @date    2018-06-08
+// @version 1.009
+// @date    2018-06-21
 
 import (
 	"fmt"
-	"github.com/belfinor/Helium/time/strftime"
 	"os"
 	"time"
+
+	"github.com/belfinor/Helium/time/strftime"
 )
-
-var logLevel int = 0
-
-type Config struct {
-	Template string `json:"template"`
-	Period   int    `json:"period"`
-	Save     int    `json:"save"`
-	Level    string `json:"level"`
-	StdOut   bool   `json:"stdout"`
-	StdErr   bool   `json:"stderr"`
-}
-
-var conf *Config
-var input chan string = make(chan string, 1024)
-var fh *os.File
-var filename string
-var lastCheck int64 = time.Now().Unix()
-var eofc chan bool = make(chan bool)
 
 var logLevels map[string]int = map[string]int{
 	"none":  0,
@@ -39,87 +22,114 @@ var logLevels map[string]int = map[string]int{
 	"trace": 6,
 }
 
-func logger(level string, strs []interface{}) {
-	code, ok := logLevels[level]
-	if ok && code <= logLevel {
-		for _, text := range strs {
-			input <- level + "| " + fmt.Sprint(text)
-		}
-	}
+type Log struct {
+	level     int
+	conf      *Config
+	input     chan string
+	fh        *os.File
+	filename  string
+	lastCheck int64
+	eofC      chan bool
 }
 
-func Init(c *Config) {
-	if conf == nil {
+func (l *Log) logger(level string, strs []interface{}) {
 
-		conf = c
-		filename = strftime.Format(c.Template, time.Now())
-		var err error
-
-		if fh, err = os.OpenFile(filename, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0755); err != nil {
-			panic(err)
-		}
-
-		SetLevel(c.Level)
-
-		if conf.Save > 0 {
-			rm_name := strftime.Format(conf.Template, time.Unix(lastCheck-int64(conf.Save*conf.Period), 0))
-			os.Remove(rm_name)
-		}
-
-		go logWriter()
-	}
-}
-
-func TestInit() {
-	if conf == nil {
-		conf = &Config{Template: "test.log", Period: 86400, Save: 20, Level: "none"}
-		SetLevel("none")
-		go logWriter()
-	}
-}
-
-func logRotate() {
-
-	if lastCheck+60 > time.Now().Unix() {
+	if l == nil {
 		return
 	}
 
-	lastCheck = time.Now().Unix()
-	new_name := strftime.Format(conf.Template, time.Now())
+	code, ok := logLevels[level]
+	if ok && code <= l.level {
+		for _, text := range strs {
+			l.input <- level + "| " + fmt.Sprint(text)
+		}
+	}
+}
 
-	if new_name != filename {
-		fh.Close()
+func New(c *Config, def bool) (*Log, error) {
+
+	if def && defLog != nil {
+		return defLog, nil
+	}
+
+	l := &Log{
+		conf:      c,
+		filename:  strftime.Format(c.Template, time.Now()),
+		lastCheck: time.Now().Unix(),
+		input:     make(chan string, 1024),
+		eofC:      make(chan bool),
+	}
+
+	var err error
+
+	if l.fh, err = os.OpenFile(l.filename, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0755); err != nil {
+		return nil, err
+	}
+
+	l.SetLevel(c.Level)
+
+	if c.Save > 0 {
+		rm_name := strftime.Format(c.Template, time.Unix(l.lastCheck-int64(c.Save*c.Period), 0))
+		os.Remove(rm_name)
+	}
+
+	if def && defLog == nil {
+		defLog = l
+	}
+
+	go l.writer()
+
+	return l, nil
+}
+
+func Init(c *Config) {
+	New(c, true)
+}
+
+func (l *Log) rotate() {
+
+	if l.lastCheck+60 > time.Now().Unix() {
+		return
+	}
+
+	l.lastCheck = time.Now().Unix()
+	new_name := strftime.Format(l.conf.Template, time.Now())
+
+	if new_name != l.filename {
+		l.fh.Close()
 
 		var err error
-		filename = new_name
+		l.filename = new_name
 
-		if fh, err = os.OpenFile(filename, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0755); err != nil {
+		if l.fh, err = os.OpenFile(l.filename, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0755); err != nil {
 			panic(err)
 		}
 
-		if conf.Save > 0 {
-			rm_name := strftime.Format(conf.Template, time.Unix(lastCheck-int64(conf.Save*conf.Period), 0))
+		if l.conf.Save > 0 {
+			rm_name := strftime.Format(l.conf.Template, time.Unix(l.lastCheck-int64(l.conf.Save*l.conf.Period), 0))
 			os.Remove(rm_name)
 		}
 	}
 }
 
-func logWriter() {
+func (l *Log) writer() {
 	for {
 		select {
 
-		case str := <-input:
+		case str := <-l.input:
 
 			if str == "eof" {
-				eofc <- true
+				l.eofC <- true
 				return
 			}
 
-			logRotate()
+			l.rotate()
 
 			str = strftime.Format("%Y-%m-%d %H:%M:%S", time.Now()) + "|" + str + "\n"
-			fh.WriteString(str)
-			fh.Sync()
+			l.fh.WriteString(str)
+			l.fh.Sync()
+
+			conf := l.conf
 
 			if conf.StdOut {
 				os.Stdout.WriteString(str)
@@ -132,57 +142,68 @@ func logWriter() {
 			}
 
 		case <-time.After(time.Minute):
-			logRotate()
+			l.rotate()
 		}
 	}
 }
 
-func Fatal(str ...interface{}) {
-	logger("fatal", str)
-	input <- "eof"
-	<-eofc
-	os.Exit(1)
-}
-
-func Finish(str ...interface{}) {
-	logger("info", str)
-	input <- "eof"
-	<-eofc
-}
-
-func Error(str ...interface{}) {
-	logger("error", str)
-}
-
-func Info(str ...interface{}) {
-	logger("info", str)
-}
-
-func Debug(str ...interface{}) {
-	logger("debug", str)
-}
-
-func Warn(str ...interface{}) {
-	logger("warn", str)
-}
-
-func Trace(str ...interface{}) {
-	logger("trace", str)
-}
-
-func SetLevel(level string) {
-	code, ok := logLevels[level]
-
-	if ok {
-		logLevel = code
-	} else {
-		logLevel = 0
+func (l *Log) Close() {
+	if l != nil {
+		l.input <- "eof"
+		<-l.eofC
 	}
 }
 
-func GetLevel() string {
+func (l *Log) Fatal(str ...interface{}) {
+	l.logger("fatal", str)
+	l.Close()
+	os.Exit(1)
+}
+
+func (l *Log) Finish(str ...interface{}) {
+	l.logger("info", str)
+	l.Close()
+}
+
+func (l *Log) Error(str ...interface{}) {
+	l.logger("error", str)
+}
+
+func (l *Log) Info(str ...interface{}) {
+	l.logger("info", str)
+}
+
+func (l *Log) Debug(str ...interface{}) {
+	l.logger("debug", str)
+}
+
+func (l *Log) Warn(str ...interface{}) {
+	l.logger("warn", str)
+}
+
+func (l *Log) Trace(str ...interface{}) {
+	l.logger("trace", str)
+}
+
+func (l *Log) SetLevel(lvl string) {
+	if l == nil {
+		return
+	}
+
+	if code, ok := logLevels[lvl]; ok {
+		l.level = code
+	} else {
+		l.level = 0
+	}
+}
+
+func (l *Log) GetLevel() string {
+	if l == nil {
+		return "none"
+	}
+
 	for code, level := range logLevels {
-		if level == logLevel {
+		if level == l.level {
 			return code
 		}
 	}
