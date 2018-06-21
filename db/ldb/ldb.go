@@ -5,11 +5,12 @@ package ldb
 // @date    2018-05-30
 
 import (
+	"os/exec"
+
 	"github.com/belfinor/Helium/log"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
-	"os/exec"
 )
 
 type DB struct {
@@ -46,15 +47,21 @@ func Init(cfg *Config) {
 	}
 }
 
+var testInited bool
+
 func TestInit() {
 
-	log.TestInit()
+	if testInited {
+		Close()
+	}
 
 	args := "rm -rf /var/tmp/ldb_test"
 	exec.Command("sh", "-c", args).Run()
 
 	cfg := &Config{Path: "/var/tmp/ldb_test", Compression: true, FileSize: 16, ReadOnly: false}
 	Init(cfg)
+
+	testInited = true
 }
 
 func Close() {

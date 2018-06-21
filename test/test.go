@@ -9,17 +9,5 @@ import (
 )
 
 func Init() {
-	ldb.Init(&ldb.Config{Path: "/tmp/ldb.test"})
-
-	for {
-		list := ldb.List([]byte{}, 1000, 0, false)
-
-		for _, key := range list {
-			ldb.Del(key)
-		}
-
-		if len(list) < 1000 {
-			break
-		}
-	}
+	ldb.TestInit()
 }

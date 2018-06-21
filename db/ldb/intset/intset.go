@@ -5,9 +5,10 @@ package intset
 // @date    2018-05-04
 
 import (
+	"sync"
+
 	"github.com/belfinor/Helium/db/ldb"
 	"github.com/belfinor/Helium/pack"
-	"sync"
 )
 
 var mutex sync.Mutex

@@ -5,9 +5,10 @@ package counter
 // @date    2018-04-26
 
 import (
+	"sync"
+
 	"github.com/belfinor/Helium/db/ldb"
 	"github.com/belfinor/Helium/pack"
-	"sync"
 )
 
 var mutex sync.Mutex

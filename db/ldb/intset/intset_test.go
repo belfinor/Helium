@@ -5,15 +5,19 @@ package intset
 // @date    2017-06-08
 
 import (
+	"testing"
+	"time"
+
 	"github.com/belfinor/Helium/db/ldb"
 	"github.com/belfinor/Helium/test"
-	"testing"
 )
 
 func TestDBIntSet(t *testing.T) {
+	time.Sleep(time.Second)
+
 	test.Init()
 
-	key := []byte("test.key")
+	key := []byte("testintset.key")
 	list := []int64{1, 2, 3}
 
 	Create(key, list...)

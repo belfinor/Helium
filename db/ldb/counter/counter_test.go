@@ -5,8 +5,9 @@ package counter
 // @date    2017-05-27
 
 import (
-	"github.com/belfinor/Helium/test"
 	"testing"
+
+	"github.com/belfinor/Helium/test"
 )
 
 func TestCounter(t *testing.T) {
