@@ -187,7 +187,7 @@ func (db *DB) ForEachKey(prefix []byte, limit int, offset int, RemovePrefix bool
 		return
 	}
 
-	iter := store.ldb.NewIterator(util.BytesPrefix(prefix), nil)
+	iter := db.ldb.NewIterator(util.BytesPrefix(prefix), nil)
 	defer iter.Release()
 
 	i := -1

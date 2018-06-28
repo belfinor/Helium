@@ -8,7 +8,7 @@ import (
 	"os/exec"
 )
 
-var store *DB
+var store Storage
 var proxyConfig *Config
 
 func Init(cfg *Config) {
@@ -69,7 +69,7 @@ func Has(key []byte) bool {
 }
 
 func Del(key []byte) {
-	store.ldb.Delete(key, nil)
+	store.Del(key)
 }
 
 func Total(prefix []byte) int64 {
