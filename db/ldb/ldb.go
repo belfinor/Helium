@@ -1,49 +1,19 @@
 package ldb
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.008
-// @date    2018-05-30
+// @version 1.009
+// @date    2018-06-28
 
 import (
 	"os/exec"
-
-	"github.com/belfinor/Helium/log"
-	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/syndtr/goleveldb/leveldb/opt"
-	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
-type DB struct {
-	ldb *leveldb.DB
-}
-
-type FOR_EACH_KEY_FUNC func([]byte) bool
-type FOR_EACH_FUNC func([]byte, []byte) bool
-
-var _db *DB
-
+var store *DB
 var proxyConfig *Config
 
 func Init(cfg *Config) {
-	if _db == nil {
-		_db = &DB{}
-
-		comp := opt.NoCompression
-		mul := 1
-		if cfg.Compression {
-			comp = opt.SnappyCompression
-			mul = 2
-		}
-
-		size := cfg.FileSize * 1024 * 1024
-
-		log.Info("open database: " + cfg.Path)
-		_db.ldb, _ = leveldb.OpenFile(cfg.Path, &opt.Options{
-			CompactionTableSize: size,
-			WriteBuffer:         size * mul,
-			Compression:         comp,
-			ReadOnly:            cfg.ReadOnly,
-		})
+	if store == nil {
+		New(cfg, true)
 	}
 }
 
@@ -65,10 +35,8 @@ func TestInit() {
 }
 
 func Close() {
-	if _db != nil {
-		_db.ldb.Close()
-		_db = nil
-	}
+	store.Close()
+	store = nil
 }
 
 func InitProxy(cfg *Config) {
@@ -88,149 +56,37 @@ func Use(base string) {
 	Init(cfg)
 }
 
-func Source() *leveldb.DB {
-	if _db == nil {
-		return nil
-	}
-
-	return _db.ldb
-}
-
 func Set(key []byte, value []byte) {
-	if value == nil || len(value) == 0 {
-		_db.ldb.Delete(key, nil)
-	} else {
-		_db.ldb.Put(key, value, nil)
-	}
+	store.Set(key, value)
 }
 
 func Get(key []byte) []byte {
-	val, err := _db.ldb.Get(key, nil)
-
-	if err != nil {
-		return nil
-	}
-
-	return val
+	return store.Get(key)
 }
 
 func Has(key []byte) bool {
-	val, err := _db.ldb.Has(key, nil)
-	if err != nil {
-		return false
-	}
-	return val
+	return store.Has(key)
 }
 
 func Del(key []byte) {
-	_db.ldb.Delete(key, nil)
+	store.ldb.Delete(key, nil)
 }
 
 func Total(prefix []byte) int64 {
-
-	iter := _db.ldb.NewIterator(util.BytesPrefix(prefix), nil)
-	defer iter.Release()
-
-	i := int64(0)
-
-	for iter.Next() {
-		i++
-	}
-
-	return i
+	return store.Total(prefix)
 }
 
 func List(prefix []byte, limit int, offset int, RemovePrefix bool) [][]byte {
 
-	iter := _db.ldb.NewIterator(util.BytesPrefix(prefix), nil)
-	defer iter.Release()
-
-	res := make([][]byte, 0)
-	i := -1
-
-	for iter.Next() {
-		i++
-
-		if i >= offset+limit {
-			break
-		}
-
-		if i < offset {
-			continue
-		}
-
-		var list []byte
-
-		if RemovePrefix {
-			size := len(iter.Key()) - len(prefix)
-			list = make([]byte, size)
-			copy(list, (iter.Key())[len(prefix):])
-		} else {
-			list = make([]byte, len(iter.Key()))
-			copy(list, iter.Key())
-		}
-
-		res = append(res, list)
-	}
-
-	return res
+	return store.List(prefix, limit, offset, RemovePrefix)
 }
 
 func ForEach(prefix []byte, RemovePrefix bool, fn FOR_EACH_FUNC) {
 
-	iter := _db.ldb.NewIterator(util.BytesPrefix(prefix), nil)
-	defer iter.Release()
-
-	list := make([]byte, 4096)
-	var size int
-
-	for iter.Next() {
-
-		if RemovePrefix {
-			size = len(iter.Key()) - len(prefix)
-			copy(list, (iter.Key())[len(prefix):])
-		} else {
-			size = len(iter.Key())
-			copy(list, iter.Key())
-		}
-
-		if !fn(list[:size], iter.Value()) {
-			return
-		}
-	}
+	store.ForEach(prefix, RemovePrefix, fn)
 }
 
 func ForEachKey(prefix []byte, limit int, offset int, RemovePrefix bool, fn FOR_EACH_KEY_FUNC) {
 
-	iter := _db.ldb.NewIterator(util.BytesPrefix(prefix), nil)
-	defer iter.Release()
-
-	i := -1
-
-	for iter.Next() {
-		i++
-
-		if i >= offset+limit {
-			break
-		}
-
-		if i < offset {
-			continue
-		}
-
-		var list []byte
-
-		if RemovePrefix {
-			size := len(iter.Key()) - len(prefix)
-			list = make([]byte, size)
-			copy(list, (iter.Key())[len(prefix):])
-		} else {
-			list = make([]byte, len(iter.Key()))
-			copy(list, iter.Key())
-		}
-
-		if !fn(list) {
-			return
-		}
-	}
+	store.ForEachKey(prefix, limit, offset, RemovePrefix, fn)
 }
