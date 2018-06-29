@@ -4,7 +4,7 @@ package ldb
 // @version 1.009
 // @date    2018-06-28
 
-var store Storage
+var store Storage = nil
 var proxyConfig *Config
 
 func Init(cfg *Config) {
