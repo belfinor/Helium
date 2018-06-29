@@ -1,16 +1,15 @@
 package ldb
 
-// @author  Mikhail Kirillov
-// @email   mikkirillov@yandex.ru
-// @version 1.001
-// @date    2017-08-09
+// @author  Mikhail Kirillov <mikkirillov@yandex.ru>
+// @version 1.002
+// @date    2018-06-29
 
 import (
 	"testing"
 )
 
 func TestDB(t *testing.T) {
-	Init(&Config{Path: "/tmp/helium.test"})
+	TestInit()
 
 	key := []byte("test.key")
 	val := []byte{1, 2, 3}
@@ -55,5 +54,19 @@ func TestDB(t *testing.T) {
 		if c != val[i] {
 			t.Fatal("db.Get error")
 		}
+	}
+
+	if Total([]byte{}) != 1 {
+		t.Fatal("wrong key number")
+	}
+
+	Set([]byte("tkey"), []byte("1"))
+
+	if Total([]byte{}) != 2 {
+		t.Fatal("wrong key number")
+	}
+
+	if Total([]byte("tk")) != 1 {
+		t.Fatal("total prefix find error")
 	}
 }

@@ -4,10 +4,6 @@ package ldb
 // @version 1.009
 // @date    2018-06-28
 
-import (
-	"os/exec"
-)
-
 var store Storage
 var proxyConfig *Config
 
@@ -17,21 +13,11 @@ func Init(cfg *Config) {
 	}
 }
 
-var testInited bool
-
 func TestInit() {
-
-	if testInited {
-		Close()
+	if store != nil {
+		store.Close()
 	}
-
-	args := "rm -rf /var/tmp/ldb_test"
-	exec.Command("sh", "-c", args).Run()
-
-	cfg := &Config{Path: "/var/tmp/ldb_test", Compression: true, FileSize: 16, ReadOnly: false}
-	Init(cfg)
-
-	testInited = true
+	store = NewFakeDB()
 }
 
 func Close() {
