@@ -44,7 +44,7 @@ func maker(cxt context.Context, stream chan int64) {
 	}
 }
 
-func (f *Fibo) Get() int64 {
+func (f *Fibo) Next() int64 {
 	return <-f.next
 }
 

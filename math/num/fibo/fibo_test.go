@@ -10,30 +10,29 @@ import (
 
 func TestFibonacci(t *testing.T) {
 	seq := New()
+	defer seq.Close()
 
-	if seq.Get() != 1 {
+	if seq.Next() != 1 {
 		t.Fatal("MakeSeq error")
 	}
 
-	if seq.Get() != 1 {
+	if seq.Next() != 1 {
 		t.Fatal("Next not work")
 	}
 
-	if seq.Get() != 2 {
+	if seq.Next() != 2 {
 		t.Fatal("Next not work")
 	}
 
-	if seq.Get() != 3 {
+	if seq.Next() != 3 {
 		t.Fatal("Next not work")
 	}
 
-	if seq.Get() != 5 {
+	if seq.Next() != 5 {
 		t.Fatal("Next not work")
 	}
 
-	if seq.Get() != 8 {
+	if seq.Next() != 8 {
 		t.Fatal("Next not work")
 	}
-
-	seq.Close()
 }

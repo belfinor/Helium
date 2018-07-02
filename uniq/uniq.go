@@ -1,43 +1,65 @@
 package uniq
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2017-05-29
+// @version 1.001
+// @date    2018-07-02
 
 import (
+	"context"
 	"fmt"
-	"github.com/belfinor/Helium/math/fibonacci"
 	"hash/crc32"
 	"math/rand"
-	"sync"
 	"time"
+
+	"github.com/belfinor/Helium/math/num/fibo"
 )
 
 type Uniq struct {
-	random *rand.Rand
-	fibo   *fibonacci.Fibonacci
-	tact   int64
-	sync.Mutex
+	next   chan string
+	cancel context.CancelFunc
 }
 
 func New() *Uniq {
-	return &Uniq{
-		random: rand.New(rand.NewSource(time.Now().Unix())),
-		fibo:   fibonacci.New(),
-		tact:   0,
+	obj := &Uniq{
+		next: make(chan string, 10),
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	obj.cancel = cancel
+
+	go maker(ctx, obj.next)
+
+	return obj
+}
+
+func maker(ctx context.Context, stream chan string) {
+	fb := fibo.New()
+	defer fb.Close()
+
+	rnd := rand.New(rand.NewSource(time.Now().Unix()))
+	tact := time.Now().Unix() & 0xffff
+	crctab := crc32.MakeTable(crc32.IEEE)
+
+	calc := func() string {
+		str := fmt.Sprintf("%08x-%04x-%04x-%08x", time.Now().Unix(), tact, rnd.Intn(0x10000), 0xffffffff&fb.Next())
+		tact = (tact + 1) & 0xffff
+		return fmt.Sprintf("%s-%08x", str, crc32.Checksum([]byte(str), crctab))
+	}
+
+	for {
+		select {
+		case stream <- calc():
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 
 func (u *Uniq) Next() string {
-	u.Lock()
-	defer u.Unlock()
+	return <-u.next
+}
 
-	u.tact++
-
-	str := fmt.Sprintf("%x-%x-%x-%x", time.Now().UnixNano(), u.tact, u.random.Intn(0x10000), u.fibo.Next())
-
-	tab := crc32.MakeTable(crc32.IEEE)
-	str = fmt.Sprintf("%s-%x", str, crc32.Checksum([]byte(str), tab))
-
-	return str
+func (u *Uniq) Close() {
+	u.cancel()
 }
