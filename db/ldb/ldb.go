@@ -1,8 +1,8 @@
 package ldb
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.009
-// @date    2018-06-28
+// @version 1.010
+// @date    2018-07-04
 
 var store Storage = nil
 var proxyConfig *Config
@@ -21,7 +21,9 @@ func TestInit() {
 }
 
 func Close() {
-	store.Close()
+	if store != nil {
+		store.Close()
+	}
 	store = nil
 }
 

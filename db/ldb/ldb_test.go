@@ -1,14 +1,18 @@
 package ldb
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-06-29
+// @version 1.003
+// @date    2018-07-04
 
 import (
 	"testing"
 )
 
 func TestDB(t *testing.T) {
+
+	Close()
+	Close()
+
 	TestInit()
 
 	key := []byte("test.key")
