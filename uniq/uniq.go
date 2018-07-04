@@ -1,8 +1,8 @@
 package uniq
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-07-02
+// @version 1.002
+// @date    2018-07-04
 
 import (
 	"context"
@@ -42,7 +42,11 @@ func maker(ctx context.Context, stream chan string) {
 	crctab := crc32.MakeTable(crc32.IEEE)
 
 	calc := func() string {
-		str := fmt.Sprintf("%08x-%04x-%04x-%08x", time.Now().Unix(), tact, rnd.Intn(0x10000), 0xffffffff&fb.Next())
+		ts := time.Now()
+		mod := ts.UnixNano() & 0xffff
+		epoch := ts.Unix()
+		fbv := fb.Next() & 0xffffffff
+		str := fmt.Sprintf("%08x-%04x-%04x-%04x-%08x", epoch, tact, rnd.Intn(0x10000), mod, fbv)
 		tact = (tact + 1) & 0xffff
 		return fmt.Sprintf("%s-%08x", str, crc32.Checksum([]byte(str), crctab))
 	}
