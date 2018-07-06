@@ -79,38 +79,52 @@ func (db *DB) Exec(query string, args ...interface{}) {
 	}
 }
 
-func (db *DB) SelectInt(query string, args ...interface{}) int64 {
+func (db *DB) SelectInt(query string, args ...interface{}) (int64, bool) {
 	var val int64
 	if err := db.tx.QueryRow(query, args...).Scan(&val); err != nil {
-		log.Error(err)
-		panic(err)
+		if err != sql.ErrNoRows {
+			log.Error(err)
+			panic(err)
+		}
+		return 0, false
 	}
-	return val
+	return val, true
 }
 
-func (db *DB) SelectFloat(query string, args ...interface{}) float64 {
+func (db *DB) SelectFloat(query string, args ...interface{}) (float64, bool) {
 	var val float64
 	if err := db.tx.QueryRow(query, args...).Scan(&val); err != nil {
-		log.Error(err)
-		panic(err)
+		if err != sql.ErrNoRows {
+			log.Error(err)
+			panic(err)
+		}
+		return 0, false
 	}
-	return val
+	return val, true
 }
 
-func (db *DB) SelectString(query string, args ...interface{}) string {
+func (db *DB) SelectString(query string, args ...interface{}) (string, bool) {
 	var val string
 	if err := db.tx.QueryRow(query, args...).Scan(&val); err != nil {
-		log.Error(err)
-		panic(err)
+		if err != sql.ErrNoRows {
+			log.Error(err)
+			panic(err)
+		}
+		return "", false
 	}
-	return val
+	return val, true
 }
 
-func (db *DB) SelectRow(query string, args []interface{}, res ...interface{}) {
+func (db *DB) SelectRow(query string, args []interface{}, res ...interface{}) bool {
 	if err := db.tx.QueryRow(query, args...).Scan(res...); err != nil {
-		log.Error(err)
-		panic(err)
+		if err != sql.ErrNoRows {
+			log.Error(err)
+			panic(err)
+		}
+		return false
 	}
+
+	return true
 }
 
 func (db *DB) Select(query string, args []interface{}, fn ROW_CALLBACK) {
