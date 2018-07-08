@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2017-10-06
+// @version 1.002
+// @date    2018-07-08
 
 import (
 	"testing"
@@ -13,7 +13,7 @@ func TestTextGetWords(t *testing.T) {
 
 	res := GetWords(text)
 
-	wait := []string{"hello", "world", "сегодня", "хороший", "день", "для", "1", "ого", "теста", "елка", "в", "лесу"}
+	wait := []string{"hello", "world", "сегодня", "хороший", "день", "для", "1-ого", "теста", "елка", "в", "лесу"}
 
 	if len(res) != len(wait) {
 		t.Fatal("bad result list size")

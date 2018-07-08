@@ -1,26 +1,60 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.004
-// @date    2017-12-26
+// @version 1.005
+// @date    2018-07-08
 
 import (
-	"regexp"
 	"strings"
+	"unicode"
 )
 
 func GetWords(text string) []string {
-	src := strings.ToLower(text)
-	src = strings.Replace(src, "ё", "е", -1)
+	text = strings.Replace(strings.ToLower(text), "ё", "е", -1)
 
-	re, _ := regexp.Compile("([a-z]+(?:[\\-\\./][a-z]+|[\\-/]\\d+)?|\\d+(?:\\.\\d+)*|[а-я]+(?:[\\-\\./][a-я]+|[\\-/]\\d+)?)")
-	words := re.FindAllString(src, -1)
+	has := false
+	str := ""
+	list := make([]string, 0, 10000)
 
-	if words == nil {
-		words = make([]string, 0)
+	allow := map[string]bool{"-": true, ".": true, "+": true}
+	clean := map[string]bool{"-": true, ".": true}
+
+	for _, run := range text {
+
+		c := string(run)
+		_, h := allow[c]
+
+		if h || unicode.IsLetter(run) || unicode.IsDigit(run) {
+			has = true
+			str += c
+		} else {
+			has = false
+
+			str = strings.TrimFunc(str, func(r rune) bool {
+				_, h := clean[string(r)]
+				return h
+			})
+
+			if str != "" {
+				list = append(list, str)
+			}
+			str = ""
+		}
+
 	}
 
-	return words
+	if has {
+		str = strings.TrimFunc(str, func(r rune) bool {
+			_, h := clean[string(r)]
+			return h
+		})
+
+		if str != "" {
+			list = append(list, str)
+		}
+	}
+
+	return list
 }
 
 func Truncate(text string, limit int) string {
