@@ -1,6 +1,7 @@
 package russian
 
 import (
+	"github.com/belfinor/Helium/text/stemmer/romance"
 	"testing"
 )
 
@@ -8,31 +9,31 @@ import (
 // or false.
 //
 func Test_isLowerVowel(t *testing.T) {
-	testCases := []WordBoolTestCase{
+	testCases := []romance.WordBoolTestCase{
 		// These are all vowels.
 		{"аеиоуыэюя", true},
 		// None of these are vowels.
 		{"бвгджзйклмнпрстфхцчшщъь", false},
 	}
-	RunRunewiseBoolTest(t, isLowerVowel, testCases)
+	romance.RunRunewiseBoolTest(t, isLowerVowel, testCases)
 }
 
 // Test stopWords for things we know should be true
 // or false.
 //
 func Test_stopWords(t *testing.T) {
-	testCases := []WordBoolTestCase{
+	testCases := []romance.WordBoolTestCase{
 		{"была", true},
 		{"нас", true},
 		{"меня", true},
 		{"химическое", false},
 		{"машиностроение", false},
 	}
-	RunWordBoolTest(t, isStopWord, testCases)
+	romance.RunWordBoolTest(t, isStopWord, testCases)
 }
 
 func Test_findRegions(t *testing.T) {
-	testCases := []FindRegionsTestCase{
+	testCases := []romance.FindRegionsTestCase{
 		{"кистей", 3, 6, 2},
 		{"пугает", 3, 6, 2},
 		{"горячей", 3, 5, 2},
@@ -135,13 +136,13 @@ func Test_findRegions(t *testing.T) {
 		{"полярный", 3, 5, 2},
 	}
 
-	RunFindRegionsTest(t, findRegions, testCases)
+	romance.RunFindRegionsTest(t, findRegions, testCases)
 }
 
 // Test step1
 //
 func Test_step1(t *testing.T) {
-	testCases := []StepTestCase{
+	testCases := []romance.StepTestCase{
 		{"оснеженные", 2, 5, 1, true, "оснеженн", 2, 5, 1},
 		{"умираю", 2, 4, 1, true, "умира", 2, 4, 1},
 		{"старосте", 4, 6, 3, true, "старост", 4, 6, 3},
@@ -294,14 +295,14 @@ func Test_step1(t *testing.T) {
 		{"овчинин", 2, 5, 1, false, "овчинин", 2, 5, 1},
 		{"ков", 3, 3, 2, false, "ков", 3, 3, 2},
 	}
-	RunStepTest(t, step1, testCases)
+	romance.RunStepTest(t, step1, testCases)
 
 }
 
 // Test step2
 //
 func Test_step2(t *testing.T) {
-	testCases := []StepTestCase{
+	testCases := []romance.StepTestCase{
 		{"незнани", 3, 6, 2, true, "незнан", 3, 6, 2},
 		{"однообрази", 2, 6, 1, true, "однообраз", 2, 6, 1},
 		{"развити", 3, 6, 2, true, "развит", 3, 6, 2},
@@ -404,14 +405,14 @@ func Test_step2(t *testing.T) {
 		{"додума", 3, 5, 2, false, "додума", 3, 5, 2},
 		{"додума", 3, 5, 2, false, "додума", 3, 5, 2},
 	}
-	RunStepTest(t, step2, testCases)
+	romance.RunStepTest(t, step2, testCases)
 
 }
 
 // Test step3
 //
 func Test_step3(t *testing.T) {
-	testCases := []StepTestCase{
+	testCases := []romance.StepTestCase{
 		{"подробност", 3, 6, 2, true, "подробн", 3, 6, 2},
 		{"подробност", 3, 6, 2, true, "подробн", 3, 6, 2},
 		{"подробност", 3, 6, 2, true, "подробн", 3, 6, 2},
@@ -514,14 +515,14 @@ func Test_step3(t *testing.T) {
 		{"арестант", 2, 4, 1, false, "арестант", 2, 4, 1},
 		{"шепнул", 3, 6, 2, false, "шепнул", 3, 6, 2},
 	}
-	RunStepTest(t, step3, testCases)
+	romance.RunStepTest(t, step3, testCases)
 
 }
 
 // Test step4
 //
 func Test_step4(t *testing.T) {
-	testCases := []StepTestCase{
+	testCases := []romance.StepTestCase{
 		{"раскольничь", 3, 6, 2, true, "раскольнич", 3, 6, 2},
 		{"создань", 3, 6, 2, true, "создан", 3, 6, 2},
 		{"доверенн", 3, 5, 2, true, "доверен", 3, 5, 2},
@@ -624,7 +625,7 @@ func Test_step4(t *testing.T) {
 		{"цепля", 3, 5, 2, false, "цепля", 3, 5, 2},
 		{"дворянин", 4, 6, 3, false, "дворянин", 4, 6, 3},
 	}
-	RunStepTest(t, step4, testCases)
+	romance.RunStepTest(t, step4, testCases)
 }
 
 // Test a large set of words for which we know

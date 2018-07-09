@@ -1,29 +1,9 @@
 package russian
 
 import (
+	"github.com/belfinor/Helium/text/stemmer/romance"
 	snowballword "github.com/belfinor/Helium/text/stemmer/word"
 )
-
-// A function type that accepts a rune and
-// returns a bool.  In this particular case,
-// it is used for identifying vowels.
-type isVowelFunc func(rune) bool
-
-// Finds the region after the first non-vowel following a vowel,
-// or a the null region at the end of the word if there is no
-// such non-vowel.  Returns the index in the Word where the
-// region starts; optionally skips the first `start` characters.
-//
-func VnvSuffix(word *snowballword.Word, f isVowelFunc, start int) int {
-  for i := 1; i < len(word.RS[start:]); i++ {
-    j := start + i
-    if f(word.RS[j-1]) && !f(word.RS[j]) {
-      return j + 1
-    }
-  }
-  return len(word.RS)
-}
-
 
 // Checks if a rune is a lowercase Russian vowel.
 //
@@ -75,8 +55,8 @@ func isStopWord(word string) bool {
 func findRegions(word *snowballword.Word) (r1start, r2start, rvstart int) {
 
 	// R1 & R2 are defined in the standard manner.
-	r1start = VnvSuffix(word, isLowerVowel, 0)
-	r2start = VnvSuffix(word, isLowerVowel, r1start)
+	r1start = romance.VnvSuffix(word, isLowerVowel, 0)
+	r2start = romance.VnvSuffix(word, isLowerVowel, r1start)
 
 	// Set RV, by default, as empty.
 	rvstart = len(word.RS)
