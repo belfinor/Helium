@@ -1,19 +1,24 @@
 package english
 
+// @author  Mikhail Kirillov <mikkirillov@yandex.ru>
+// @version 1.001
+// @date    2018-07-10
+
 import (
-	snowballword "github.com/belfinor/Helium/text/stemmer/word"
 	"strings"
+
+	snowballword "github.com/belfinor/Helium/text/stemmer/word"
 )
 
 // Stem an English word.  This is the only exported
 // function in this package.
 //
-func Stem(word string, stemStopwWords bool) string {
+func Stem(word string) string {
 
 	word = strings.ToLower(strings.TrimSpace(word))
 
 	// Return small words and stop words
-	if len(word) <= 2 || (stemStopwWords == false && isStopWord(word)) {
+	if len(word) <= 2 || isStopWord(word) {
 		return word
 	}
 

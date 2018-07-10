@@ -1,5 +1,9 @@
 package russian
 
+// @author  Mikhail Kirillov <mikkirillov@yandex.ru>
+// @version 1.000
+// @date    2018-07-10
+
 import (
 	"github.com/belfinor/Helium/text/stemmer/romance"
 	snowballword "github.com/belfinor/Helium/text/stemmer/word"
@@ -19,11 +23,10 @@ func isLowerVowel(r rune) bool {
 	return false
 }
 
-// Return `true` if the input `word` is a French stop word.
-//
-func isStopWord(word string) bool {
-	switch word {
-	case "и", "в", "во", "не", "что", "он", "на", "я", "с",
+var stopWords map[string]bool
+
+func init() {
+	list := []string{"и", "в", "во", "не", "что", "он", "на", "я", "с",
 		"со", "как", "а", "то", "все", "она", "так", "его",
 		"но", "да", "ты", "к", "у", "же", "вы", "за", "бы",
 		"по", "только", "ее", "мне", "было", "вот", "от",
@@ -44,10 +47,20 @@ func isStopWord(word string) bool {
 		"какая", "много", "разве", "три", "эту", "моя",
 		"впрочем", "хорошо", "свою", "этой", "перед", "иногда",
 		"лучше", "чуть", "том", "нельзя", "такой", "им", "более",
-		"всегда", "конечно", "всю", "между":
-		return true
+		"всегда", "конечно", "всю", "между"}
+
+	stopWords = make(map[string]bool)
+
+	for _, v := range list {
+		stopWords[v] = true
 	}
-	return false
+}
+
+// Return `true` if the input `word` is a French stop word.
+//
+func isStopWord(word string) bool {
+	_, h := stopWords[word]
+	return h
 }
 
 // Find the starting point of the regions R1, R2, & RV

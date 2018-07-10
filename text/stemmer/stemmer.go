@@ -1,8 +1,8 @@
 package stemmer
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-07-09
+// @version 1.001
+// @date    2018-07-10
 
 import (
 	"github.com/belfinor/Helium/text"
@@ -15,10 +15,10 @@ import (
 func Word(word string) string {
 
 	if text.IsRussian(word) {
-		return russian.Stem(word, true)
+		return russian.Stem(word)
 	}
 
-	return english.Stem(word, true)
+	return english.Stem(word)
 }
 
 // Stem from chan to chan

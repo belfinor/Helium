@@ -1,8 +1,13 @@
 package russian
 
+// @author  Mikhail Kirillov <mikkirillov@yandex.ru>
+// @version 1.000
+// @date    2018-07-10
+
 import (
-	"github.com/belfinor/Helium/text/stemmer/romance"
 	"testing"
+
+	"github.com/belfinor/Helium/text/stemmer/romance"
 )
 
 // Test isLowerVowel for things we know should be true
@@ -838,7 +843,7 @@ func Test_Vocabulary(t *testing.T) {
 		{"куртке", "куртк"},
 	}
 	for _, testCase := range testCases {
-		result := Stem(testCase.in, true)
+		result := Stem(testCase.in)
 		if result != testCase.out {
 			t.Errorf("Expected %v -> %v, but got %v", testCase.in, testCase.out, result)
 		}

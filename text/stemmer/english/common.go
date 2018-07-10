@@ -1,5 +1,9 @@
 package english
 
+// @author  Mikhail Kirillov <mikkirillov@yandex.ru>
+// @version 1.001
+// @date    2018-07-10
+
 import (
 	"github.com/belfinor/Helium/text/stemmer/romance"
 	snowballword "github.com/belfinor/Helium/text/stemmer/word"
@@ -201,11 +205,10 @@ func stemSpecialWord(word string) (stemmed string) {
 	return
 }
 
-// Return `true` if the input `word` is an English stop word.
-//
-func isStopWord(word string) bool {
-	switch word {
-	case "a", "about", "above", "after", "again", "against", "all", "am", "an",
+var stopWords map[string]bool
+
+func init() {
+	list := []string{"a", "about", "above", "after", "again", "against", "all", "am", "an",
 		"and", "any", "are", "as", "at", "be", "because", "been", "before",
 		"being", "below", "between", "both", "but", "by", "can", "did", "do",
 		"does", "doing", "don", "down", "during", "each", "few", "for", "from",
@@ -219,10 +222,20 @@ func isStopWord(word string) bool {
 		"this", "those", "through", "to", "too", "under", "until", "up",
 		"very", "was", "we", "were", "what", "when", "where", "which", "while",
 		"who", "whom", "why", "will", "with", "you", "your", "yours", "yourself",
-		"yourselves":
-		return true
+		"yourselves"}
+
+	stopWords = make(map[string]bool)
+
+	for _, v := range list {
+		stopWords[v] = true
 	}
-	return false
+}
+
+// Return `true` if the input `word` is an English stop word.
+//
+func isStopWord(word string) bool {
+	_, h := stopWords[word]
+	return h
 }
 
 // A word is called short if it ends in a short syllable, and if R1 is null.

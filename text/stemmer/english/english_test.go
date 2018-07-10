@@ -1,10 +1,8 @@
-/*
-	Herein lie all the tests of the Snowball English stemmer.
-
-	Many of the tests are drawn from cases where this implementation
-	did not match the results of the Python NLTK implementation.
-*/
 package english
+
+// @author  Mikhail Kirillov <mikkirillov@yandex.ru>
+// @version 1.001
+// @date    2018-07-10
 
 import (
 	"testing"
@@ -382,13 +380,11 @@ func Test_Stem(t *testing.T) {
 		{"ied", true, "ie"},
 		{"ies", true, "ie"},
 		// Stop words
-		{"because", true, "becaus"},
 		{"because", false, "because"},
-		{"above", true, "abov"},
 		{"above", false, "above"},
 	}
 	for _, tc := range testCases {
-		stemmed := Stem(tc.in, tc.stemStopWords)
+		stemmed := Stem(tc.in)
 		if stemmed != tc.out {
 			t.Errorf("Expected %v to stem to %v, but got %v", tc.in, tc.out, stemmed)
 		}
