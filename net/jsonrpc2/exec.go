@@ -1,13 +1,14 @@
 package jsonrpc2
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2017-07-06
+// @version 1.001
+// @date    2018-07-11
 
 import (
 	"encoding/json"
-	"github.com/belfinor/Helium/log"
 	"reflect"
+
+	"github.com/belfinor/Helium/log"
 )
 
 var callback map[string]interface{} = map[string]interface{}{}
@@ -20,7 +21,17 @@ func MakeError(rec *Request, code int64, message string) *Response {
 	return &Response{Id: rec.Id, JsonRPC: "2.0", Error: &Error{Code: code, Message: message}}
 }
 
-func Exec(rec *Request) *Response {
+func Exec(rec *Request) (resp *Response) {
+
+	defer func() {
+
+		if r := recover(); r != nil {
+			log.Error(r)
+			resp = MakeError(rec, -32600, "Invalid Request")
+		}
+
+	}()
+
 	if rec.JsonRPC != "2.0" {
 		log.Error("invalid protocol version: " + rec.JsonRPC)
 		if rec.Id != nil {
