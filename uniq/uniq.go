@@ -1,17 +1,18 @@
 package uniq
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-07-04
+// @version 1.003
+// @date    2018-07-11
 
 import (
 	"context"
 	"fmt"
 	"hash/crc32"
-	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/belfinor/Helium/math/num/fibo"
+	"github.com/belfinor/Helium/rand/mersenne"
 )
 
 type Uniq struct {
@@ -19,7 +20,7 @@ type Uniq struct {
 	cancel context.CancelFunc
 }
 
-func New() *Uniq {
+func New(pref ...string) *Uniq {
 	obj := &Uniq{
 		next: make(chan string, 10),
 	}
@@ -28,17 +29,17 @@ func New() *Uniq {
 
 	obj.cancel = cancel
 
-	go maker(ctx, obj.next)
+	go maker(ctx, obj.next, strings.Join(pref, ""))
 
 	return obj
 }
 
-func maker(ctx context.Context, stream chan string) {
+func maker(ctx context.Context, stream chan string, prefix string) {
 	fb := fibo.New()
 	defer fb.Close()
 
-	rnd := rand.New(rand.NewSource(time.Now().Unix()))
-	tact := time.Now().Unix() & 0xffff
+	//rnd := rand.New(rand.NewSource(time.Now().Unix()))
+	tact := mersenne.Next() & 0xffff
 	crctab := crc32.MakeTable(crc32.IEEE)
 
 	calc := func() string {
@@ -46,9 +47,9 @@ func maker(ctx context.Context, stream chan string) {
 		mod := ts.UnixNano() & 0xffff
 		epoch := ts.Unix()
 		fbv := fb.Next() & 0xffffffff
-		str := fmt.Sprintf("%08x-%04x-%04x-%04x-%08x", epoch, tact, rnd.Intn(0x10000), mod, fbv)
+		str := fmt.Sprintf("%s%016x%08x%04x%04x%08x", prefix, mersenne.Next(), epoch, tact, mod, fbv)
 		tact = (tact + 1) & 0xffff
-		return fmt.Sprintf("%s-%08x", str, crc32.Checksum([]byte(str), crctab))
+		return fmt.Sprintf("%s%08x", str, crc32.Checksum([]byte(str), crctab))
 	}
 
 	for {
