@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"net/url"
 
 	"github.com/CloudyKit/jet"
 	"github.com/belfinor/Helium/log"
@@ -30,6 +31,10 @@ func New(dirs []string, def bool) *Tmpl {
 	// add noescape filter
 	tmpl.set.AddGlobal("noescape", jet.SafeWriter(func(w io.Writer, b []byte) {
 		w.Write(b)
+	}))
+
+	tmpl.set.AddGlobal("urlescape", jet.SafeWriter(func(w io.Writer, b []byte) {
+		w.Write([]byte(url.QueryEscape(string(b))))
 	}))
 
 	if def {
