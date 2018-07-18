@@ -7,11 +7,12 @@ package client
 import (
 	"bytes"
 	"crypto/tls"
-	"golang.org/x/net/html/charset"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"golang.org/x/net/html/charset"
 )
 
 type Client struct {
@@ -46,6 +47,8 @@ func (c *Client) Request(method string, url string, headers map[string]string, c
 		Timeout:   timeout,
 		Transport: tr,
 	}
+
+	tr.DisableKeepAlives = true
 
 	var rd io.Reader
 
