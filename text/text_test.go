@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-07-08
+// @version 1.003
+// @date    2018-07-27
 
 import (
 	"testing"
@@ -59,4 +59,16 @@ func TestTextMakePrefSuf(t *testing.T) {
 			t.Fatal("Invalid result")
 		}
 	}
+}
+
+func TestTruncate(t *testing.T) {
+
+	if Truncate("привет, мир!", 9) != "привет, м..." {
+		t.Fatal("Truncate not working")
+	}
+
+	if Truncate("привет, мир!", 11) != "привет, мир..." {
+		t.Fatal("Truncate not working")
+	}
+
 }

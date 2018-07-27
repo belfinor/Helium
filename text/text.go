@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.005
-// @date    2018-07-08
+// @version 1.006
+// @date    2018-07-27
 
 import (
 	"strings"
@@ -58,17 +58,20 @@ func GetWords(text string) []string {
 }
 
 func Truncate(text string, limit int) string {
-	result := ""
+
+	builder := strings.Builder{}
 	i := 0
+
 	for _, rune := range text {
+		builder.WriteRune(rune)
 		i++
+
 		if i >= limit {
-			result += "..."
+			builder.WriteString("...")
 			break
 		}
-		result += string(rune)
 	}
-	return result
+	return builder.String()
 }
 
 func GetPrefixes(str string) []string {
