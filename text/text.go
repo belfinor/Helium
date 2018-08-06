@@ -1,57 +1,21 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.006
-// @date    2018-07-27
+// @version 1.007
+// @date    2018-08-06
 
 import (
 	"strings"
-	"unicode"
 )
 
 func GetWords(text string) []string {
-	text = strings.Replace(strings.ToLower(text), "ё", "е", -1)
 
-	has := false
-	str := ""
-	list := make([]string, 0, 10000)
+	list := make([]string, 0, 100)
 
-	allow := map[string]bool{"-": true, ".": true, "+": true}
-	clean := map[string]bool{"-": true, ".": true}
+	stream := WordStream(strings.NewReader(text))
 
-	for _, run := range text {
-
-		c := string(run)
-		_, h := allow[c]
-
-		if h || unicode.IsLetter(run) || unicode.IsDigit(run) {
-			has = true
-			str += c
-		} else {
-			has = false
-
-			str = strings.TrimFunc(str, func(r rune) bool {
-				_, h := clean[string(r)]
-				return h
-			})
-
-			if str != "" {
-				list = append(list, str)
-			}
-			str = ""
-		}
-
-	}
-
-	if has {
-		str = strings.TrimFunc(str, func(r rune) bool {
-			_, h := clean[string(r)]
-			return h
-		})
-
-		if str != "" {
-			list = append(list, str)
-		}
+	for v := range stream {
+		list = append(list, v)
 	}
 
 	return list
