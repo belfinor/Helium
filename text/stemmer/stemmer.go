@@ -28,6 +28,10 @@ func Word(word string) string {
 		return wf
 	}
 
+	if word == "." {
+		return word
+	}
+
 	if text.IsRussian(word) {
 		return russian.Stem(word)
 	}

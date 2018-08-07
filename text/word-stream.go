@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-08-06
+// @version 1.002
+// @date    2018-08-07
 
 import (
 	"io"
@@ -10,7 +10,24 @@ import (
 	"unicode"
 )
 
-func WordStream(rdr io.RuneReader) <-chan string {
+const (
+	WSO_ENDS int = 0
+)
+
+type wsOpts struct {
+	ends bool
+}
+
+func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
+
+	var opt wsOpts
+
+	for _, o := range opts {
+		switch o {
+		case WSO_ENDS:
+			opt.ends = true
+		}
+	}
 
 	output := make(chan string, 10000)
 
@@ -53,9 +70,13 @@ func WordStream(rdr io.RuneReader) <-chan string {
 				} else {
 					output <- builder.String()
 					builder.Reset()
+
 					if run == '#' {
 						state = 3
 					} else {
+						if opt.ends && (run == '!' || run == '?') {
+							output <- "."
+						}
 						state = 0
 					}
 				}
@@ -69,6 +90,11 @@ func WordStream(rdr io.RuneReader) <-chan string {
 				} else {
 					output <- builder.String()
 					builder.Reset()
+
+					if prev == '.' && opt.ends {
+						output <- "."
+					}
+
 					state = 0
 				}
 
@@ -76,6 +102,9 @@ func WordStream(rdr io.RuneReader) <-chan string {
 
 				if !(unicode.IsLetter(run) || unicode.IsDigit(run)) {
 					if run != '#' {
+						if opt.ends && (run == '.' || run == '!' || run == '?') {
+							output <- "."
+						}
 						state = 0
 					}
 				}
@@ -85,6 +114,10 @@ func WordStream(rdr io.RuneReader) <-chan string {
 
 		if state == 1 || state == 2 {
 			output <- builder.String()
+		}
+
+		if opt.ends {
+			output <- "."
 		}
 
 		close(output)
