@@ -1,12 +1,13 @@
 package stemmer
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-07-13
+// @version 1.003
+// @date    2018-08-07
 
 import (
 	"bufio"
 	"os"
+	"strings"
 
 	"github.com/belfinor/Helium/log"
 	"github.com/belfinor/Helium/text"
@@ -32,6 +33,19 @@ func Word(word string) string {
 	}
 
 	return english.Stem(word)
+}
+
+// TextToCode
+//
+func TextToCode(str string) string {
+	res := make([]string, 0, 4)
+
+	for wrd := range text.WordStream(strings.NewReader(str)) {
+		rec := Word(wrd)
+		res = append(res, rec)
+	}
+
+	return strings.Join(res, " ")
 }
 
 // Stem from chan to chan
