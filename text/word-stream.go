@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-08-07
+// @version 1.003
+// @date    2018-08-08
 
 import (
 	"io"
@@ -16,6 +16,10 @@ const (
 
 type wsOpts struct {
 	ends bool
+}
+
+func isEndStatement(run rune) bool {
+	return run == '.' || run == '!' || run == '?' || run == '…'
 }
 
 func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
@@ -74,7 +78,7 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 					if run == '#' {
 						state = 3
 					} else {
-						if opt.ends && (run == '!' || run == '?') {
+						if opt.ends && isEndStatement(run) {
 							output <- "."
 						}
 						state = 0
@@ -102,7 +106,7 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 
 				if !(unicode.IsLetter(run) || unicode.IsDigit(run)) {
 					if run != '#' {
-						if opt.ends && (run == '.' || run == '!' || run == '?') {
+						if opt.ends && isEndStatement(run) {
 							output <- "."
 						}
 						state = 0

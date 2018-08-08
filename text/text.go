@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.007
-// @date    2018-08-06
+// @version 1.008
+// @date    2018-08-08
 
 import (
 	"strings"
@@ -31,7 +31,7 @@ func Truncate(text string, limit int) string {
 		i++
 
 		if i >= limit {
-			builder.WriteString("...")
+			builder.WriteString("…")
 			break
 		}
 	}
