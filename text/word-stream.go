@@ -150,7 +150,7 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 
 					if !opt.noUrls {
 
-						str = strings.TrimRight(str, ".,!?…")
+						str = strings.TrimRight(str, ".,!?\"'")
 
 						output <- str
 					}
@@ -166,7 +166,7 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 
 			str := builder.String()
 			if state == 4 {
-				str = strings.TrimRight(str, ".,!?…")
+				str = strings.TrimRight(str, ".,!?\"'")
 			}
 			output <- str
 		}
