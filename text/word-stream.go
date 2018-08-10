@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.003
-// @date    2018-08-08
+// @version 1.004
+// @date    2018-08-10
 
 import (
 	"io"
@@ -11,11 +11,13 @@ import (
 )
 
 const (
-	WSO_ENDS int = 0
+	WSO_ENDS    int = 0
+	WSO_NO_URLS int = 1
 )
 
 type wsOpts struct {
-	ends bool
+	ends   bool
+	noUrls bool
 }
 
 func isEndStatement(run rune) bool {
@@ -30,6 +32,8 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 		switch o {
 		case WSO_ENDS:
 			opt.ends = true
+		case WSO_NO_URLS:
+			opt.noUrls = true
 		}
 	}
 
@@ -72,16 +76,41 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 				} else if unicode.IsLetter(run) || unicode.IsDigit(run) {
 					builder.WriteRune(run)
 				} else {
-					output <- builder.String()
-					builder.Reset()
 
-					if run == '#' {
-						state = 3
-					} else {
-						if opt.ends && isEndStatement(run) {
-							output <- "."
+					if run == ':' {
+
+						str := builder.String()
+						if str == "http" || str == "https" {
+
+							run, _, err = rdr.ReadRune()
+							if err != nil || run != '/' {
+								output <- str
+								builder.Reset()
+								state = 0
+							} else {
+								builder.WriteRune(':')
+								builder.WriteRune('/')
+								state = 4
+							}
+						} else {
+							output <- str
+							builder.Reset()
+							state = 0
 						}
-						state = 0
+
+					} else {
+
+						output <- builder.String()
+						builder.Reset()
+
+						if run == '#' {
+							state = 3
+						} else {
+							if opt.ends && isEndStatement(run) {
+								output <- "."
+							}
+							state = 0
+						}
 					}
 				}
 
@@ -113,11 +142,33 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 					}
 				}
 
+			case 4:
+				if run == ' ' || run == '\t' || run == '\n' || run == '\r' {
+
+					str := builder.String()
+					builder.Reset()
+
+					if !opt.noUrls {
+
+						str = strings.TrimRight(str, ".,!?…")
+
+						output <- str
+					}
+
+					state = 0
+				} else {
+					builder.WriteRune(run)
+				}
 			}
 		}
 
-		if state == 1 || state == 2 {
-			output <- builder.String()
+		if state == 1 || state == 2 || (state == 4 && !opt.noUrls) {
+
+			str := builder.String()
+			if state == 4 {
+				str = strings.TrimRight(str, ".,!?…")
+			}
+			output <- str
 		}
 
 		if opt.ends {
