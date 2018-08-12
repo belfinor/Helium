@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.004
-// @date    2018-08-10
+// @version 1.005
+// @date    2018-08-12
 
 import (
 	"io"
@@ -11,13 +11,21 @@ import (
 )
 
 const (
-	WSO_ENDS    int = 0
-	WSO_NO_URLS int = 1
+	WSO_ENDS    int = 0 // ADD dot on ent of statement
+	WSO_NO_URLS int = 1 // SKIP ulrs
+	WSO_NO_NUMS int = 2 // SKIP 123, 12.10, 10:10, 12.08.2018, 10-10 etc
+)
+
+const (
+	ST_NULL  int = 0
+	ST_NUM   int = 1
+	ST_ALPHA int = 2
 )
 
 type wsOpts struct {
 	ends   bool
 	noUrls bool
+	noNums bool
 }
 
 func isEndStatement(run rune) bool {
@@ -34,6 +42,8 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 			opt.ends = true
 		case WSO_NO_URLS:
 			opt.noUrls = true
+		case WSO_NO_NUMS:
+			opt.noNums = true
 		}
 	}
 
@@ -43,10 +53,15 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 
 		state := 0
 		prev := '0'
+		st := ST_NULL
 
 		builder := strings.Builder{}
 
 		for {
+
+			if state == 0 {
+				st = ST_NULL
+			}
 
 			run, _, err := rdr.ReadRune()
 			if err != nil {
@@ -61,9 +76,14 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 			switch state {
 			case 0:
 
-				if unicode.IsLetter(run) || unicode.IsDigit(run) {
+				if unicode.IsLetter(run) {
 					builder.WriteRune(run)
 					state = 1
+					st = st | ST_ALPHA
+				} else if unicode.IsDigit(run) {
+					builder.WriteRune(run)
+					state = 1
+					st = st | ST_NUM
 				} else if run == '#' {
 					state = 3
 				}
@@ -73,8 +93,12 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 				if run == '-' || run == '.' {
 					prev = run
 					state = 2
-				} else if unicode.IsLetter(run) || unicode.IsDigit(run) {
+				} else if unicode.IsLetter(run) {
 					builder.WriteRune(run)
+					st = st | ST_ALPHA
+				} else if unicode.IsDigit(run) {
+					builder.WriteRune(run)
+					st = st | ST_NUM
 				} else {
 
 					if run == ':' {
@@ -93,14 +117,18 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 								state = 4
 							}
 						} else {
-							output <- str
+							if !opt.noNums || st&ST_ALPHA != 0 {
+								output <- str
+							}
 							builder.Reset()
 							state = 0
 						}
 
 					} else {
 
-						output <- builder.String()
+						if !opt.noNums || st&ST_ALPHA != 0 {
+							output <- builder.String()
+						}
 						builder.Reset()
 
 						if run == '#' {
@@ -116,12 +144,20 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 
 			case 2:
 
-				if unicode.IsLetter(run) || unicode.IsDigit(run) {
+				if unicode.IsLetter(run) {
 					builder.WriteRune(prev)
 					builder.WriteRune(run)
+					st = st | ST_ALPHA
+					state = 1
+				} else if unicode.IsDigit(run) {
+					builder.WriteRune(prev)
+					builder.WriteRune(run)
+					st = st | ST_NUM
 					state = 1
 				} else {
-					output <- builder.String()
+					if !opt.noNums || st&ST_ALPHA != 0 {
+						output <- builder.String()
+					}
 					builder.Reset()
 
 					if prev == '.' && opt.ends {
@@ -168,7 +204,10 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 			if state == 4 {
 				str = strings.TrimRight(str, ".,!?\"'")
 			}
-			output <- str
+
+			if state == 4 || !opt.noNums || st&ST_ALPHA != 0 {
+				output <- str
+			}
 		}
 
 		if opt.ends {
