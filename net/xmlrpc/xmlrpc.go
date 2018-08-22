@@ -10,13 +10,14 @@ import (
 	"encoding/base64"
 	"encoding/xml"
 	"fmt"
-	"github.com/belfinor/Helium/log"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/belfinor/Helium/log"
 )
 
 var DefaultTimeout int = 5
@@ -38,6 +39,8 @@ func Request(url string, method string, params ...interface{}) []interface{} {
 		Timeout:   timeout,
 		Transport: tr,
 	}
+
+	tr.DisableKeepAlives = true
 
 	response, err := ua.Post(url, "text/xml", buffer)
 	if err != nil {
