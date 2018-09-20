@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.005
-// @date    2018-08-12
+// @version 1.006
+// @date    2018-09-20
 
 import (
 	"io"
@@ -14,6 +14,7 @@ const (
 	WSO_ENDS    int = 0 // ADD dot on ent of statement
 	WSO_NO_URLS int = 1 // SKIP ulrs
 	WSO_NO_NUMS int = 2 // SKIP 123, 12.10, 10:10, 12.08.2018, 10-10 etc
+	WSO_HASHTAG int = 3 // use hashtags
 )
 
 const (
@@ -23,9 +24,10 @@ const (
 )
 
 type wsOpts struct {
-	ends   bool
-	noUrls bool
-	noNums bool
+	ends     bool
+	noUrls   bool
+	noNums   bool
+	hashTags bool
 }
 
 func isEndStatement(run rune) bool {
@@ -44,6 +46,8 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 			opt.noUrls = true
 		case WSO_NO_NUMS:
 			opt.noNums = true
+		case WSO_HASHTAG:
+			opt.hashTags = true
 		}
 	}
 
@@ -170,12 +174,34 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 			case 3:
 
 				if !(unicode.IsLetter(run) || unicode.IsDigit(run)) {
+
+					str := builder.String()
+					builder.Reset()
+
+					if str != "" && opt.hashTags {
+						if !opt.noNums || st&ST_ALPHA != 0 {
+							output <- str
+						}
+					}
+
 					if run != '#' {
+
 						if opt.ends && isEndStatement(run) {
 							output <- "."
 						}
 						state = 0
+					} else {
+						st = ST_NULL
 					}
+				} else {
+
+					if unicode.IsDigit(run) {
+						st = st | ST_NUM
+					} else {
+						st = st | ST_ALPHA
+					}
+
+					builder.WriteRune(run)
 				}
 
 			case 4:
@@ -207,6 +233,15 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 
 			if state == 4 || !opt.noNums || st&ST_ALPHA != 0 {
 				output <- str
+			}
+		} else if state == 3 {
+			str := builder.String()
+			builder.Reset()
+
+			if str != "" && opt.hashTags {
+				if !opt.noNums || st&ST_ALPHA != 0 {
+					output <- str
+				}
 			}
 		}
 

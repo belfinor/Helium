@@ -38,6 +38,13 @@ func TestWordStream(t *testing.T) {
 		[]string{"132*2.1478=4.0 это знают в целом мире, да https://yandex.ru ?", "это", "знают", "в", "целом", "мире", "да", "."},
 	}
 
+	test_nonums_hashtags := [][]string{
+		[]string{"привет 12 мир", "привет", "мир", "."},
+		[]string{"это случилось 28.05.1985 #test#1#тест #0", "это", "случилось", "test", "тест", "."},
+		[]string{"стук в дверь в 12:00 #привет заставил", "стук", "в", "дверь", "в", "привет", "заставил", "."},
+		[]string{"132*2.1478=4.0 это знают в целом мире, да https://yandex.ru ? #тест", "это", "знают", "в", "целом", "мире", "да", "тест", "."},
+	}
+
 	for _, v := range tests {
 
 		src := v[0]
@@ -99,6 +106,34 @@ func TestWordStream(t *testing.T) {
 		src := v[0]
 		v = v[1:]
 		stream := WordStream(strings.NewReader(src), WSO_ENDS, WSO_NO_URLS, WSO_NO_NUMS)
+
+		for wrd := range stream {
+
+			if len(v) == 0 {
+				t.Fatal(src)
+			}
+
+			if wrd != v[0] {
+				t.Fatal(src)
+			}
+
+			if len(v) > 1 {
+				v = v[1:]
+			} else {
+				v = []string{}
+			}
+		}
+
+		if len(v) != 0 {
+			t.Fatal(src)
+		}
+	}
+
+	for _, v := range test_nonums_hashtags {
+
+		src := v[0]
+		v = v[1:]
+		stream := WordStream(strings.NewReader(src), WSO_ENDS, WSO_NO_URLS, WSO_NO_NUMS, WSO_HASHTAG)
 
 		for wrd := range stream {
 
