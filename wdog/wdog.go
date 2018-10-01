@@ -15,11 +15,14 @@ var input chan bool = make(chan bool)
 
 func Run(timeout time.Duration) {
 
+	log.Info("wdog start")
+
 	go func() {
 
 		for {
 
 			select {
+
 			case <-input:
 
 				// wdog ok
