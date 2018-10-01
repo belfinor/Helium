@@ -29,7 +29,7 @@ func Run(timeout time.Duration) {
 
 			case <-time.After(timeout):
 
-				log.Error("wdog tmeout. terminate application")
+				log.Error("wdog timeout. terminate application")
 				<-time.After(time.Second * 2)
 				os.Exit(1)
 			}
