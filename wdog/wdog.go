@@ -15,19 +15,24 @@ var input chan bool = make(chan bool)
 
 func Run(timeout time.Duration) {
 
-	for {
+	go func() {
 
-		select {
-		case <-input:
+		for {
 
-		case <-time.After(timeout):
+			select {
+			case <-input:
 
-			log.Error("wdog tmeout. terminate application")
-			<-time.After(time.Second * 2)
-			os.Exit(1)
+				// wdog ok
+
+			case <-time.After(timeout):
+
+				log.Error("wdog tmeout. terminate application")
+				<-time.After(time.Second * 2)
+				os.Exit(1)
+			}
+
 		}
-
-	}
+	}()
 
 }
 
