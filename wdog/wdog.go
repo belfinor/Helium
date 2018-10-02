@@ -17,7 +17,9 @@ type WatchDog struct {
 	tm    time.Duration
 }
 
-func New(keepalive time.Duration) *WatchDog {
+type FUNC func()
+
+func New(keepalive time.Duration, beforeExit FUNC) *WatchDog {
 	wd := &WatchDog{
 		input: make(chan bool, 10),
 		done:  make(chan bool),
@@ -40,6 +42,11 @@ func New(keepalive time.Duration) *WatchDog {
 
 				log.Error("wdog timeout. terminate application")
 				<-time.After(time.Second * 2)
+
+				if beforeExit != nil {
+					beforeExit()
+				}
+
 				os.Exit(1)
 			}
 

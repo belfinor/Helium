@@ -10,7 +10,7 @@ import (
 )
 
 func TestWatchDog(t *testing.T) {
-	wd := New(time.Nanosecond * 500000000)
+	wd := New(time.Nanosecond*500000000, nil)
 	defer wd.Close()
 
 	for i := 0; i < 10; i++ {
