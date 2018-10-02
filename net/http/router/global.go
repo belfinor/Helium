@@ -26,9 +26,9 @@ func Register(method string, path string, fn HANDLER) {
 	}
 }
 
-func Handler(rw http.ResponseWriter, req *http.Request) {
+func ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if handler != nil {
-		handler.Handler(rw, req)
+		handler.ServeHTTP(rw, req)
 	} else {
 		errors.Send(rw, 404)
 	}

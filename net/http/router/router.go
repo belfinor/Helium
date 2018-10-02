@@ -92,7 +92,7 @@ func (r *Router) Register(method string, path string, fn HANDLER) {
 	root.F = fn
 }
 
-func (r *Router) Handler(rw http.ResponseWriter, req *http.Request) {
+func (r *Router) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	defer func() {
 
