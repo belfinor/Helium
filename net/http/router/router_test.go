@@ -84,9 +84,9 @@ func TestRouter(t *testing.T) {
 		},
 	}
 
-	router := New()
+	router := New(true)
 
-	router.Register("DELETE", "/users/:uid/posts/:pid", func(rw http.ResponseWriter, r *http.Request, p Params) {
+	Register("DELETE", "/users/:uid/posts/:pid", func(rw http.ResponseWriter, r *http.Request, p Params) {
 		funcNum = 5
 		funcUid = p.GetInt("uid")
 		funcPid = p.GetInt("pid")
@@ -95,7 +95,7 @@ func TestRouter(t *testing.T) {
 		rw.Write([]byte("1"))
 	})
 
-	router.Register("POST", "/users/:uid/posts", func(rw http.ResponseWriter, r *http.Request, p Params) {
+	Register("POST", "/users/:uid/posts", func(rw http.ResponseWriter, r *http.Request, p Params) {
 		funcNum = 6
 		funcUid = p.GetInt("uid")
 		funcPid = 0
@@ -104,6 +104,19 @@ func TestRouter(t *testing.T) {
 		rw.Write([]byte("1"))
 	})
 
+	Register("POST", "/panic", func(rw http.ResponseWriter, r *http.Request, p Params) {
+		funcNum = 7
+		funcUid = 0
+		funcPid = 0
+		funcTail = ""
+		panic("7")
+	})
+
+	router.OptionsFunc = func(rw http.ResponseWriter, req *http.Request) {
+		funcNum = 8
+		rw.WriteHeader(200)
+	}
+
 	for k, v := range rules {
 		router.Register("GET", k, v)
 	}
@@ -111,7 +124,7 @@ func TestRouter(t *testing.T) {
 	req := httptest.NewRequest("GET", "/users/2/posts", nil)
 	rw := httptest.NewRecorder()
 
-	router.Handler(rw, req)
+	Handler(rw, req)
 	if funcNum != 1 || rw.Result().StatusCode != 200 || funcUid != 2 || funcTail != "" {
 		t.Fatal("/users/2/posts")
 	}
@@ -119,7 +132,7 @@ func TestRouter(t *testing.T) {
 	req = httptest.NewRequest("GET", "/tails/users/2/posts", nil)
 	rw = httptest.NewRecorder()
 
-	router.Handler(rw, req)
+	Handler(rw, req)
 	if funcNum != 2 || rw.Result().StatusCode != 200 || funcUid != 0 || funcTail != "/users/2/posts" {
 		t.Fatal("/tails/users/2/posts")
 	}
@@ -127,7 +140,7 @@ func TestRouter(t *testing.T) {
 	req = httptest.NewRequest("GET", "/users/12/posts", nil)
 	rw = httptest.NewRecorder()
 
-	router.Handler(rw, req)
+	Handler(rw, req)
 	if funcNum != 1 || rw.Result().StatusCode != 200 || funcUid != 12 || funcTail != "" {
 		t.Fatal("/users/12/posts")
 	}
@@ -135,7 +148,7 @@ func TestRouter(t *testing.T) {
 	req = httptest.NewRequest("GET", "/userssssssssss", nil)
 	rw = httptest.NewRecorder()
 
-	router.Handler(rw, req)
+	Handler(rw, req)
 	if rw.Result().StatusCode != 404 {
 		t.Fatal("/usersssssssss")
 	}
@@ -143,7 +156,7 @@ func TestRouter(t *testing.T) {
 	req = httptest.NewRequest("GET", "/users", nil)
 	rw = httptest.NewRecorder()
 
-	router.Handler(rw, req)
+	Handler(rw, req)
 	if rw.Result().StatusCode != 200 || funcNum != 3 || funcUid != 0 || funcTail != "" {
 		t.Fatal("/users")
 	}
@@ -151,7 +164,7 @@ func TestRouter(t *testing.T) {
 	req = httptest.NewRequest("GET", "/users//", nil)
 	rw = httptest.NewRecorder()
 
-	router.Handler(rw, req)
+	Handler(rw, req)
 	if rw.Result().StatusCode != 200 || funcNum != 3 || funcUid != 0 || funcTail != "" {
 		t.Fatal("/users")
 	}
@@ -159,7 +172,7 @@ func TestRouter(t *testing.T) {
 	req = httptest.NewRequest("GET", "/users/122/posts/100", nil)
 	rw = httptest.NewRecorder()
 
-	router.Handler(rw, req)
+	Handler(rw, req)
 	if funcNum != 4 || rw.Result().StatusCode != 200 || funcUid != 122 || funcPid != 100 || funcTail != "" {
 		t.Fatal("/users/122/posts/100")
 	}
@@ -167,7 +180,7 @@ func TestRouter(t *testing.T) {
 	req = httptest.NewRequest("DELETE", "/users/122/posts/100", nil)
 	rw = httptest.NewRecorder()
 
-	router.Handler(rw, req)
+	Handler(rw, req)
 	if funcNum != 5 || rw.Result().StatusCode != 200 || funcUid != 122 || funcPid != 100 || funcTail != "" {
 		t.Fatal("/users/122/posts/100")
 	}
@@ -175,8 +188,24 @@ func TestRouter(t *testing.T) {
 	req = httptest.NewRequest("POST", "/users/22/posts/", nil)
 	rw = httptest.NewRecorder()
 
-	router.Handler(rw, req)
+	Handler(rw, req)
 	if funcNum != 6 || rw.Result().StatusCode != 200 || funcUid != 22 || funcPid != 0 || funcTail != "" {
 		t.Fatal("/users/22/posts/")
+	}
+
+	req = httptest.NewRequest("POST", "/panic", nil)
+	rw = httptest.NewRecorder()
+
+	Handler(rw, req)
+	if rw.Result().StatusCode != 500 {
+		t.Fatal("/panic")
+	}
+
+	req = httptest.NewRequest("OPTIONS", "/options", nil)
+	rw = httptest.NewRecorder()
+
+	Handler(rw, req)
+	if rw.Result().StatusCode != 200 || funcNum != 8 {
+		t.Fatal("/options")
 	}
 }

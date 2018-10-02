@@ -9,17 +9,32 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/belfinor/Helium/log"
 	"github.com/belfinor/Helium/net/http/errors"
 )
 
 type Router struct {
-	methods map[string]*node
+	methods           map[string]*node
+	NotFoundFunc      http.HandlerFunc
+	BadRequestFunc    http.HandlerFunc
+	InternalErrorFunc http.HandlerFunc
+	OptionsFunc       http.HandlerFunc
 }
 
-func New() *Router {
-	return &Router{
-		methods: map[string]*node{},
+func New(isDefault bool) *Router {
+	rt := &Router{
+		methods:           map[string]*node{},
+		NotFoundFunc:      func(rw http.ResponseWriter, req *http.Request) { errors.Send(rw, 404) },
+		BadRequestFunc:    func(rw http.ResponseWriter, req *http.Request) { errors.Send(rw, 400) },
+		InternalErrorFunc: func(rw http.ResponseWriter, req *http.Request) { errors.Send(rw, 500) },
+		OptionsFunc:       nil,
 	}
+
+	if isDefault {
+		handler = rt
+	}
+
+	return rt
 }
 
 func (r *Router) Register(method string, path string, fn HANDLER) {
@@ -75,15 +90,29 @@ func (r *Router) Register(method string, path string, fn HANDLER) {
 
 func (r *Router) Handler(rw http.ResponseWriter, req *http.Request) {
 
+	defer func() {
+
+		if re := recover(); re != nil {
+			log.Error(re)
+			r.InternalErrorFunc(rw, req)
+		}
+
+	}()
+
+	if req.Method == http.MethodOptions && r.OptionsFunc != nil {
+		r.OptionsFunc(rw, req)
+		return
+	}
+
 	root, has := r.methods[req.Method]
 	if !has {
-		errors.Send(rw, 404)
+		r.NotFoundFunc(rw, req)
 		return
 	}
 
 	paths := path2list(req.URL.Path, false)
 	if paths == nil {
-		errors.Send(rw, 400)
+		r.BadRequestFunc(rw, req)
 		return
 	}
 
@@ -112,7 +141,7 @@ func (r *Router) Handler(rw http.ResponseWriter, req *http.Request) {
 			continue
 		}
 
-		errors.Send(rw, 404)
+		r.NotFoundFunc(rw, req)
 		return
 	}
 
@@ -123,7 +152,7 @@ func (r *Router) Handler(rw http.ResponseWriter, req *http.Request) {
 	if root.F != nil {
 		root.F(rw, req, Params(params))
 	} else {
-		errors.Send(rw, 404)
+		r.NotFoundFunc(rw, req)
 	}
 }
 
