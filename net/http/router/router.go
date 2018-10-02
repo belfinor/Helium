@@ -5,6 +5,7 @@ package router
 // @date    2018-10-02
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -23,6 +24,7 @@ type Router struct {
 	BadRequestFunc    http.HandlerFunc
 	InternalErrorFunc http.HandlerFunc
 	OptionsFunc       http.HandlerFunc
+	LoggerFunc        log.LoggerFunc
 }
 
 func New(isDefault bool) *Router {
@@ -93,6 +95,10 @@ func (r *Router) Register(method string, path string, fn HANDLER) {
 }
 
 func (r *Router) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+
+	if r.LoggerFunc != nil {
+		writeLog(r.LoggerFunc, req.Method, req.RequestURI)
+	}
 
 	defer func() {
 
@@ -246,4 +252,8 @@ func path2list(path string, regmod bool) []string {
 	}
 
 	return result
+}
+
+func writeLog(f log.LoggerFunc, method string, url string) {
+	f(fmt.Sprintf("%s %s", method, url))
 }
