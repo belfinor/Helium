@@ -16,6 +16,10 @@ func SetDefault(rt *Router) {
 	handler = rt
 }
 
+func GetDefault() *Router {
+	return handler
+}
+
 func Register(method string, path string, fn HANDLER) {
 	if handler != nil {
 		handler.Register(method, path, fn)

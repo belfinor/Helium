@@ -13,6 +13,10 @@ import (
 	"github.com/belfinor/Helium/net/http/errors"
 )
 
+func init() {
+	New(true)
+}
+
 type Router struct {
 	methods           map[string]*node
 	NotFoundFunc      http.HandlerFunc
