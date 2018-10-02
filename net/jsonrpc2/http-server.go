@@ -1,18 +1,19 @@
 package jsonrpc2
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2017-07-06
+// @version 1.001
+// @date    2018-10-02
 
 import (
 	"fmt"
-	"github.com/belfinor/Helium/log"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+
+	"github.com/belfinor/Helium/log"
 )
 
-func httpHandler(rw http.ResponseWriter, req *http.Request) {
+func HttpHandler(rw http.ResponseWriter, req *http.Request) {
 
 	if req.Method != "POST" {
 		rw.WriteHeader(http.StatusNotFound)
@@ -31,7 +32,7 @@ func httpHandler(rw http.ResponseWriter, req *http.Request) {
 }
 
 func RunHttp(cfg *HttpConfig) {
-	http.HandleFunc(cfg.Url, httpHandler)
+	http.HandleFunc(cfg.Url, HttpHandler)
 	log.Info("start jsonrpc2 server addr=" + cfg.Host + ":" + strconv.Itoa(cfg.Port) + " url=" + cfg.Url)
 	http.ListenAndServe(cfg.Host+":"+strconv.Itoa(cfg.Port), nil)
 }
