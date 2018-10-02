@@ -1,8 +1,8 @@
 package log
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.009
-// @date    2018-06-21
+// @version 1.010
+// @date    2018-10-02
 
 import (
 	"fmt"
@@ -21,6 +21,8 @@ var logLevels map[string]int = map[string]int{
 	"debug": 5,
 	"trace": 6,
 }
+
+type LoggerFunc func(str ...interface{})
 
 type Log struct {
 	level     int
