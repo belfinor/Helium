@@ -41,3 +41,15 @@ func (p Params) GetFloat(name string) float64 {
 
 	return 0
 }
+
+func (p Params) GetBool(name string) bool {
+	if v, h := p[name]; h {
+		if val, err := strconv.ParseBool(v); err == nil {
+			return val
+		}
+
+		return false
+	}
+
+	return false
+}

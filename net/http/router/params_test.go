@@ -15,6 +15,9 @@ func TestParams(t *testing.T) {
 		"float": "12.5",
 		"hello": "hello",
 		"other": "val",
+		"bool1": "true",
+		"bool2": "1",
+		"bool3": "0",
 	})
 
 	if params.GetString("hello") != "hello" {
@@ -51,5 +54,25 @@ func TestParams(t *testing.T) {
 
 	if params.GetInt("hello1") != 0 {
 		t.Fatal("GetInt faliled")
+	}
+
+	if !params.GetBool("bool1") {
+		t.Fatal("GetInt faliled")
+	}
+
+	if !params.GetBool("bool2") {
+		t.Fatal("GetInt faliled")
+	}
+
+	if params.GetBool("bool3") {
+		t.Fatal("GetInt faliled")
+	}
+
+	if params.GetBool("hello1") {
+		t.Fatal("GetBool faliled")
+	}
+
+	if params.GetBool("hello") {
+		t.Fatal("GetBool faliled")
 	}
 }
