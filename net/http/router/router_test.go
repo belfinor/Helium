@@ -1,8 +1,8 @@
 package router
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-10-02
+// @version 1.002
+// @date    2018-10-03
 
 import (
 	"net/http"
@@ -135,6 +135,14 @@ func TestRouter(t *testing.T) {
 	ServeHTTP(rw, req)
 	if funcNum != 2 || rw.Result().StatusCode != 200 || funcUid != 0 || funcTail != "/users/2/posts" {
 		t.Fatal("/tails/users/2/posts")
+	}
+
+	req = httptest.NewRequest("GET", "/tails", nil)
+	rw = httptest.NewRecorder()
+
+	ServeHTTP(rw, req)
+	if rw.Result().StatusCode != 404 {
+		t.Fatal("/tails")
 	}
 
 	req = httptest.NewRequest("GET", "/users/12/posts", nil)
