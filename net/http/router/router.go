@@ -1,17 +1,19 @@
 package router
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-10-02
+// @version 1.002
+// @date    2018-10-03
 
 import (
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/belfinor/Helium/log"
 	"github.com/belfinor/Helium/net/http/errors"
+	"github.com/belfinor/Helium/uniq"
 )
 
 func init() {
@@ -25,6 +27,7 @@ type Router struct {
 	InternalErrorFunc http.HandlerFunc
 	OptionsFunc       http.HandlerFunc
 	LoggerFunc        log.LoggerFunc
+	MakeUid           bool
 }
 
 func New(isDefault bool) *Router {
@@ -34,6 +37,8 @@ func New(isDefault bool) *Router {
 		BadRequestFunc:    func(rw http.ResponseWriter, req *http.Request) { errors.Send(rw, 400) },
 		InternalErrorFunc: func(rw http.ResponseWriter, req *http.Request) { errors.Send(rw, 500) },
 		OptionsFunc:       nil,
+		LoggerFunc:        nil,
+		MakeUid:           true,
 	}
 
 	if isDefault {
@@ -95,6 +100,10 @@ func (r *Router) Register(method string, path string, fn HANDLER) {
 }
 
 func (r *Router) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+
+	if r.MakeUid {
+		makeUid(rw, req)
+	}
 
 	if r.LoggerFunc != nil {
 		writeLog(r.LoggerFunc, req.Method, req.RequestURI)
@@ -256,4 +265,31 @@ func path2list(path string, regmod bool) []string {
 
 func writeLog(f log.LoggerFunc, method string, url string) {
 	f(fmt.Sprintf("%s %s", method, url))
+}
+
+var UNIQS *uniq.Uniq = uniq.New()
+
+func makeUid(rw http.ResponseWriter, req *http.Request) {
+
+	c, err := req.Cookie("uid")
+
+	v := ""
+
+	if err != nil {
+		v = UNIQS.Next()
+	} else {
+		v = c.Value
+	}
+
+	cookie := &http.Cookie{
+		Name:     "uid",
+		Value:    v,
+		Path:     "/",
+		HttpOnly: true,
+		Expires:  time.Unix(time.Now().Unix()+86400*366, 0),
+	}
+
+	req.AddCookie(cookie)
+
+	http.SetCookie(rw, cookie)
 }
