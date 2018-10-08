@@ -1,8 +1,8 @@
 package stemmer
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.003
-// @date    2018-08-07
+// @version 1.004
+// @date    2018-10-08
 
 import (
 	"bufio"
@@ -30,6 +30,32 @@ func Word(word string) string {
 
 	if word == "." {
 		return word
+	}
+
+	for _, run := range word {
+		if run == '-' {
+
+			lst := strings.Split(word, "-")
+
+			res := make([]string, 0, len(lst))
+
+			for _, w := range lst {
+
+				if w == "." {
+					res = append(res, w)
+					continue
+				}
+
+				if text.IsRussian(word) {
+					res = append(res, russian.Stem(w))
+				} else {
+					res = append(res, english.Stem(w))
+				}
+
+			}
+
+			return strings.Join(res, "-")
+		}
 	}
 
 	if text.IsRussian(word) {
