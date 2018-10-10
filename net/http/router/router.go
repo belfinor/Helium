@@ -1,8 +1,8 @@
 package router
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-10-03
+// @version 1.003
+// @date    2018-10-10
 
 import (
 	"fmt"
@@ -97,6 +97,12 @@ func (r *Router) Register(method string, path string, fn HANDLER) {
 	}
 
 	root.F = fn
+}
+
+func (r *Router) Redirect(from, to string, code int) {
+	r.Register("GET", from, func(rw http.ResponseWriter, r *http.Request, p Params) {
+		http.Redirect(rw, r, to, code)
+	})
 }
 
 func (r *Router) ServeHTTP(rw http.ResponseWriter, req *http.Request) {

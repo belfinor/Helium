@@ -1,8 +1,8 @@
 package router
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-10-02
+// @version 1.001
+// @date    2018-10-10
 
 import (
 	"net/http"
@@ -23,6 +23,12 @@ func GetDefault() *Router {
 func Register(method string, path string, fn HANDLER) {
 	if handler != nil {
 		handler.Register(method, path, fn)
+	}
+}
+
+func Redirect(from, to string, code int) {
+	if handler != nil {
+		handler.Redirect(from, to, code)
 	}
 }
 

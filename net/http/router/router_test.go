@@ -1,8 +1,8 @@
 package router
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-10-03
+// @version 1.003
+// @date    2018-10-10
 
 import (
 	"net/http"
@@ -112,6 +112,8 @@ func TestRouter(t *testing.T) {
 		panic("7")
 	})
 
+	Redirect("/redirect", "/dest", 302)
+
 	router.OptionsFunc = func(rw http.ResponseWriter, req *http.Request) {
 		funcNum = 8
 		rw.WriteHeader(200)
@@ -215,5 +217,13 @@ func TestRouter(t *testing.T) {
 	ServeHTTP(rw, req)
 	if rw.Result().StatusCode != 200 || funcNum != 8 {
 		t.Fatal("/options")
+	}
+
+	req = httptest.NewRequest("GET", "/redirect", nil)
+	rw = httptest.NewRecorder()
+
+	ServeHTTP(rw, req)
+	if rw.Result().StatusCode != 302 {
+		t.Fatal("/redirect")
 	}
 }
