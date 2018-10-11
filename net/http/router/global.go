@@ -1,8 +1,8 @@
 package router
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-10-10
+// @version 1.002
+// @date    2018-10-11
 
 import (
 	"net/http"
@@ -29,6 +29,12 @@ func Register(method string, path string, fn HANDLER) {
 func Redirect(from, to string, code int) {
 	if handler != nil {
 		handler.Redirect(from, to, code)
+	}
+}
+
+func RegisterJsonRPC(url string) {
+	if handler != nil {
+		handler.RegisterJsonRPC(url)
 	}
 }
 

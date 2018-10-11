@@ -13,6 +13,7 @@ import (
 
 	"github.com/belfinor/Helium/log"
 	"github.com/belfinor/Helium/net/http/errors"
+	"github.com/belfinor/Helium/net/jsonrpc2"
 	"github.com/belfinor/Helium/uniq"
 )
 
@@ -102,6 +103,12 @@ func (r *Router) Register(method string, path string, fn HANDLER) {
 func (r *Router) Redirect(from, to string, code int) {
 	r.Register("GET", from, func(rw http.ResponseWriter, r *http.Request, p Params) {
 		http.Redirect(rw, r, to, code)
+	})
+}
+
+func (r *Router) RegisterJsonRPC(url string) {
+	r.Register("POST", url, func(rw http.ResponseWriter, req *http.Request, p Params) {
+		jsonrpc2.HttpHandler(rw, req)
 	})
 }
 
