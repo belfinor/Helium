@@ -1,8 +1,8 @@
 package router
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.003
-// @date    2018-10-10
+// @version 1.004
+// @date    2018-10-12
 
 import (
 	"fmt"
@@ -23,6 +23,7 @@ func init() {
 
 type Router struct {
 	methods           map[string]*node
+	redirects         map[string]string
 	NotFoundFunc      http.HandlerFunc
 	BadRequestFunc    http.HandlerFunc
 	InternalErrorFunc http.HandlerFunc
@@ -34,6 +35,7 @@ type Router struct {
 func New(isDefault bool) *Router {
 	rt := &Router{
 		methods:           map[string]*node{},
+		redirects:         map[string]string{},
 		NotFoundFunc:      func(rw http.ResponseWriter, req *http.Request) { errors.Send(rw, 404) },
 		BadRequestFunc:    func(rw http.ResponseWriter, req *http.Request) { errors.Send(rw, 400) },
 		InternalErrorFunc: func(rw http.ResponseWriter, req *http.Request) { errors.Send(rw, 500) },
@@ -101,9 +103,8 @@ func (r *Router) Register(method string, path string, fn HANDLER) {
 }
 
 func (r *Router) Redirect(from, to string, code int) {
-	r.Register("GET", from, func(rw http.ResponseWriter, r *http.Request, p Params) {
-		http.Redirect(rw, r, to, code)
-	})
+	r.redirects[from] = to
+	r.redirects[from+"/"] = to
 }
 
 func (r *Router) RegisterJsonRPC(url string) {
@@ -116,6 +117,18 @@ func (r *Router) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	if r.MakeUid {
 		makeUid(rw, req)
+	}
+
+	if req.Method == http.MethodGet {
+
+		if dest, has := r.redirects[req.URL.Path]; has {
+			if r.LoggerFunc != nil {
+				r.LoggerFunc("GET " + req.URL.Path + " -> " + dest)
+			}
+
+			http.Redirect(rw, req, dest, 302)
+			return
+		}
 	}
 
 	if r.LoggerFunc != nil {
