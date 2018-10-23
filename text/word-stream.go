@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.006
-// @date    2018-09-20
+// @version 1.007
+// @date    2018-10-23
 
 import (
 	"io"
@@ -11,10 +11,11 @@ import (
 )
 
 const (
-	WSO_ENDS    int = 0 // ADD dot on ent of statement
-	WSO_NO_URLS int = 1 // SKIP ulrs
-	WSO_NO_NUMS int = 2 // SKIP 123, 12.10, 10:10, 12.08.2018, 10-10 etc
-	WSO_HASHTAG int = 3 // use hashtags
+	WSO_ENDS         int = 0 // ADD dot on ent of statement
+	WSO_NO_URLS      int = 1 // SKIP ulrs
+	WSO_NO_NUMS      int = 2 // SKIP 123, 12.10, 10:10, 12.08.2018, 10-10 etc
+	WSO_HASHTAG      int = 3 // use hashtags
+	WSO_NO_XXX_COLON int = 4 // skip xxx: and XXX:
 )
 
 const (
@@ -24,10 +25,11 @@ const (
 )
 
 type wsOpts struct {
-	ends     bool
-	noUrls   bool
-	noNums   bool
-	hashTags bool
+	ends       bool
+	noUrls     bool
+	noNums     bool
+	hashTags   bool
+	NoXxxColon bool
 }
 
 func isEndStatement(run rune) bool {
@@ -48,6 +50,8 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 			opt.noNums = true
 		case WSO_HASHTAG:
 			opt.hashTags = true
+		case WSO_NO_XXX_COLON:
+			opt.NoXxxColon = true
 		}
 	}
 
@@ -120,6 +124,9 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 								builder.WriteRune('/')
 								state = 4
 							}
+						} else if opt.NoXxxColon && (str == "xxx" || str == "ххх") {
+							builder.Reset()
+							state = 0
 						} else {
 							if !opt.noNums || st&ST_ALPHA != 0 {
 								output <- str

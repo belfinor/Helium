@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-08-10
+// @version 1.003
+// @date    2018-10-23
 
 import (
 	"strings"
@@ -40,9 +40,9 @@ func TestWordStream(t *testing.T) {
 
 	test_nonums_hashtags := [][]string{
 		[]string{"привет 12 мир", "привет", "мир", "."},
-		[]string{"это случилось 28.05.1985 #test#1#тест #0", "это", "случилось", "test", "тест", "."},
-		[]string{"стук в дверь в 12:00 #привет заставил", "стук", "в", "дверь", "в", "привет", "заставил", "."},
-		[]string{"132*2.1478=4.0 это знают в целом мире, да https://yandex.ru ? #тест", "это", "знают", "в", "целом", "мире", "да", "тест", "."},
+		[]string{"это случилось 28.05.1985 #test#1#тест #0 xxx", "это", "случилось", "test", "тест", "xxx", "."},
+		[]string{"стук в дверь в 12:00 #привет заставил xxx:", "стук", "в", "дверь", "в", "привет", "заставил", "."},
+		[]string{"132*2.1478=4.0 это знают в целом мире, ххх: да https://yandex.ru ? #тест", "это", "знают", "в", "целом", "мире", "да", "тест", "."},
 	}
 
 	for _, v := range tests {
@@ -133,7 +133,7 @@ func TestWordStream(t *testing.T) {
 
 		src := v[0]
 		v = v[1:]
-		stream := WordStream(strings.NewReader(src), WSO_ENDS, WSO_NO_URLS, WSO_NO_NUMS, WSO_HASHTAG)
+		stream := WordStream(strings.NewReader(src), WSO_ENDS, WSO_NO_URLS, WSO_NO_NUMS, WSO_HASHTAG, WSO_NO_XXX_COLON)
 
 		for wrd := range stream {
 
