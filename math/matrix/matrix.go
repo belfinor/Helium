@@ -1,10 +1,12 @@
 package matrix
 
-import "errors"
-
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-10-24
+// @version 1.002
+// @date    2018-10-25
+
+import (
+	"errors"
+)
 
 type Matrix struct {
 	data []float64
@@ -175,7 +177,7 @@ func (m *Matrix) Determinant() (float64, error) {
 		return 0, errors.New("matrix.Determinant rows != cols")
 	}
 
-	res := float64(0)
+	res := float64(1)
 
 	mt := m.Clone()
 
@@ -207,7 +209,7 @@ func (m *Matrix) Determinant() (float64, error) {
 			k1 := i*mt.cols + i
 			k2 := j*mt.cols + i
 
-			coeff := mt.data[(i+1)*mt.cols+i] / cur
+			coeff := mt.data[k2] / cur
 
 			for k := i; k < mt.cols; k++ {
 				mt.data[k2] -= mt.data[k1] * coeff
@@ -227,6 +229,14 @@ func (m *Matrix) Set(i, j int, v float64) error {
 
 	m.data[i*m.cols+j] = v
 	return nil
+}
+
+func (m *Matrix) Get(i, j int) (float64, error) {
+	if i < 0 || i >= m.rows || j < 0 || j >= m.cols {
+		return 0, errors.New("matrix.Get invalid cell")
+	}
+
+	return m.data[i*m.cols+j], nil
 }
 
 func (m *Matrix) Inverse() (*Matrix, error) {
