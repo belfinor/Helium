@@ -1,8 +1,8 @@
 package matrix
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-10-25
+// @version 1.001
+// @date    2018-10-27
 
 import (
 	"fmt"
@@ -70,4 +70,43 @@ func TestMatrix(t *testing.T) {
 		t.Fatal("Determinant not work")
 	}
 
+	cl, e1 = Import([][]float64{
+		[]float64{10, 1, 1},
+		[]float64{2, 10, 1},
+		[]float64{2, 2, 10},
+	})
+
+	if e != nil {
+		t.Fatal("matrix.Import not work")
+	}
+
+	det, e1 = cl.Determinant()
+	if e1 != nil {
+		t.Fatal("Detrminant not work")
+	}
+
+	if int(det+0.005) != 946 {
+		t.Fatal("Determinant wrong value")
+	}
+
+	inv, err := cl.Inverse()
+	if err != nil {
+		t.Fatal("Inverse not work")
+	}
+
+	data := [][]int{
+		[]int{1035, -84, -95},
+		[]int{-190, 1035, -84},
+		[]int{-169, -190, 1035},
+	}
+
+	for i := 0; i < inv.rows; i++ {
+		for j := 0; j < inv.cols; j++ {
+			v, _ := inv.Get(i, j)
+			iv := int(v * 10000)
+			if iv != data[i][j] {
+				t.Fatal("wrong inverse matrix")
+			}
+		}
+	}
 }

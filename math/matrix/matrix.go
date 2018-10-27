@@ -1,11 +1,12 @@
 package matrix
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-10-25
+// @version 1.003
+// @date    2018-10-27
 
 import (
 	"errors"
+	"fmt"
 )
 
 type Matrix struct {
@@ -37,6 +38,21 @@ func (m *Matrix) Clone() *Matrix {
 	copy(r.data, m.data)
 
 	return r
+}
+
+func (m *Matrix) String() string {
+
+	str := "["
+
+	for i := 0; i < m.rows; i++ {
+		str += "\n"
+		for j := 0; j < m.cols; j++ {
+			str += fmt.Sprintf("%6.6f ", m.data[i*m.cols+j])
+		}
+	}
+
+	str += "\n]"
+	return str
 }
 
 func Identity(rows int) (*Matrix, error) {
