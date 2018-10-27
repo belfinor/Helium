@@ -40,6 +40,42 @@ func (m *Matrix) Clone() *Matrix {
 	return r
 }
 
+func FromRow(row []float64) (*Matrix, error) {
+	if len(row) == 0 {
+		return nil, errors.New("matrix.FromRow invalid input data")
+	}
+
+	cols := len(row)
+
+	r := &Matrix{
+		data: make([]float64, cols),
+		rows: 1,
+		cols: cols,
+	}
+
+	copy(r.data, row)
+
+	return r, nil
+}
+
+func FromCol(row []float64) (*Matrix, error) {
+	if len(row) == 0 {
+		return nil, errors.New("matrix.FromCol invalid input data")
+	}
+
+	rows := len(row)
+
+	r := &Matrix{
+		data: make([]float64, rows),
+		rows: rows,
+		cols: 1,
+	}
+
+	copy(r.data, row)
+
+	return r, nil
+}
+
 func (m *Matrix) String() string {
 
 	str := "["
