@@ -104,6 +104,10 @@ func Identity(rows int) (*Matrix, error) {
 	return m, nil
 }
 
+func (m *Matrix) Slice() []float64 {
+	return m.data
+}
+
 func (m *Matrix) Export() [][]float64 {
 	res := make([][]float64, m.rows)
 
