@@ -1,8 +1,8 @@
 package matrix
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.003
-// @date    2018-10-27
+// @version 1.004
+// @date    2018-11-02
 
 import (
 	"errors"
@@ -198,7 +198,17 @@ func Mul(m1, m2 *Matrix) (*Matrix, error) {
 	return r, nil
 }
 
-func (m *Matrix) Trans() *Matrix {
+func MulValue(m *Matrix, v float64) *Matrix {
+	r := m.Clone()
+
+	for i, item := range r.data {
+		r.data[i] = item * v
+	}
+
+	return r
+}
+
+func (m *Matrix) T() *Matrix {
 	r, _ := New(m.cols, m.rows)
 
 	for i := 0; i < m.rows; i++ {

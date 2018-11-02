@@ -1,12 +1,14 @@
 package matrix
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-10-27
+// @version 1.002
+// @date    2018-11-02
 
 import (
 	"fmt"
 	"testing"
+
+	"github.com/belfinor/Helium/math/matrix"
 )
 
 func TestMatrix(t *testing.T) {
@@ -106,6 +108,46 @@ func TestMatrix(t *testing.T) {
 			iv := int(v * 10000)
 			if iv != data[i][j] {
 				t.Fatal("wrong inverse matrix")
+			}
+		}
+	}
+
+	m1, _ := matrix.Import([][]float64{
+		[]float64{1, 2},
+		[]float64{3, 4},
+	})
+
+	m2, _ := matrix.Import([][]float64{
+		[]float64{5, 6},
+		[]float64{7, 8},
+	})
+
+	m3, e3 := matrix.Mul(m1, m2)
+	if e3 != nil {
+		t.Fatal("matrix.Mul failed")
+	}
+
+	wait := [][]float64{
+		[]float64{19, 22},
+		[]float64{43, 50},
+	}
+
+	for i := 0; i < 2; i++ {
+		for j := 0; j < 2; j++ {
+			v, _ := m3.Get(i, j)
+			if v != wait[i][j] {
+				t.Fatal("matrix.Mul error")
+			}
+		}
+	}
+
+	tr := m3.T()
+
+	for i := 0; i < 2; i++ {
+		for j := 0; j < 2; j++ {
+			v, _ := tr.Get(j, i)
+			if v != wait[i][j] {
+				t.Fatal("matrix.T error")
 			}
 		}
 	}
