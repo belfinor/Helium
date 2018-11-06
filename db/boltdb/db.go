@@ -1,26 +1,29 @@
 package boltdb
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.003
-// @date    2018-01-23
+// @version 1.004
+// @date    2018-11-06
 
 import (
 	"bytes"
 	"errors"
-	"github.com/belfinor/Helium/log"
-	"github.com/boltdb/bolt"
 	"os"
 	"time"
+
+	"github.com/belfinor/Helium/log"
+	"github.com/boltdb/bolt"
 )
 
 type DB struct {
 	db *bolt.DB
 }
 
+var dbh *DB
+
 type FETCH_CALLBACK func(key, value []byte) bool
 type TRANSACTION_CALLBACK func(tx *Tx) error
 
-func Open(cfg *Config) (*DB, error) {
+func Open(cfg *Config, def bool) (*DB, error) {
 
 	opts := &bolt.Options{ReadOnly: cfg.ReadOnly}
 
@@ -36,7 +39,13 @@ func Open(cfg *Config) (*DB, error) {
 
 	log.Info("open boltdb " + cfg.Database)
 
-	return &DB{db: db}, nil
+	d := &DB{db: db}
+
+	if def {
+		dbh = d
+	}
+
+	return d, nil
 }
 
 func (db *DB) Close() {
@@ -68,7 +77,7 @@ func (db *DB) Set(bucket, key, value []byte) {
 	})
 }
 
-func (db *DB) NextId(bucket, key, value []byte) int64 {
+func (db *DB) NextId(bucket []byte) int64 {
 
 	var id int64
 
