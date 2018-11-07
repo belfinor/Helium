@@ -58,6 +58,9 @@ func (db *DB) Get(bucket, key []byte) []byte {
 
 	db.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(bucket)
+		if b == nil {
+			return nil
+		}
 		v = b.Get(key)
 		return nil
 	})
@@ -114,6 +117,10 @@ func (db *DB) Prefix(bucket, prefix []byte, f FETCH_CALLBACK) {
 
 		c := tx.Bucket(bucket).Cursor()
 
+		if c == nil {
+			return nil
+		}
+
 		for k, v := c.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = c.Next() {
 
 			if !f(k, v) {
@@ -134,6 +141,10 @@ func (db *DB) Range(bucket, from, to []byte, f FETCH_CALLBACK) {
 
 		c := tx.Bucket(bucket).Cursor()
 
+		if c == nil {
+			return nil
+		}
+
 		for k, v := c.Seek(from); k != nil && bytes.Compare(k, to) <= 0; k, v = c.Next() {
 
 			if !f(k, v) {
@@ -153,6 +164,11 @@ func (db *DB) ForEach(bucket []byte, f FETCH_CALLBACK) {
 	db.db.View(func(tx *bolt.Tx) error {
 
 		c := tx.Bucket(bucket)
+
+		if c == nil {
+			return nil
+		}
+
 		c.ForEach(func(k, v []byte) error {
 			if !f(k, v) {
 				return errors.New("stop iteration")
