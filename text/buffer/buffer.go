@@ -69,3 +69,16 @@ func (b *Buffer) Add(str string) {
 		b.size++
 	}
 }
+
+func (b *Buffer) Join(sep string) string {
+	res := ""
+
+	for i := 0; i < b.size; i++ {
+		if i > 0 {
+			res += sep
+		}
+		res += b.Get(i)
+	}
+
+	return res
+}
