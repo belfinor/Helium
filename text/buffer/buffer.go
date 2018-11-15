@@ -11,7 +11,7 @@ type Buffer struct {
 	limit int
 }
 
-func NewBuffer(length int) *Buffer {
+func New(length int) *Buffer {
 	return &Buffer{
 		data:  make([]string, length),
 		size:  0,
