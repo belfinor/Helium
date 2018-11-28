@@ -1,8 +1,8 @@
 package buffer
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-11-15
+// @version 1.002
+// @date    2018-11-28
 
 type Buffer struct {
 	data  []string
@@ -67,6 +67,8 @@ func (b *Buffer) Add(str string) {
 	b.data[(b.first+b.size)%b.limit] = str
 	if b.size < b.limit {
 		b.size++
+	} else {
+		b.first = (b.first + 1) % b.limit
 	}
 }
 
