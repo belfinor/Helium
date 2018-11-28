@@ -2,7 +2,7 @@ package trgm
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
 // @version 1.000
-// @date    2018-11-15
+// @date    2018-11-28
 
 import (
 	"hash/crc64"
@@ -66,7 +66,7 @@ func trgmStream(in <-chan string) <-chan uint64 {
 			return
 		}
 
-		str := bufOut.Join(" ")
+		str := bufOut.Join(" ", 3)
 		bufOut.Shift(1)
 
 		out <- crc64.Checksum([]byte(str), crcTab)

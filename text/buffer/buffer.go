@@ -72,10 +72,10 @@ func (b *Buffer) Add(str string) {
 	}
 }
 
-func (b *Buffer) Join(sep string) string {
+func (b *Buffer) Join(sep string, limit int) string {
 	res := ""
 
-	for i := 0; i < b.size; i++ {
+	for i := 0; i < b.size && i < limit; i++ {
 		if i > 0 {
 			res += sep
 		}
