@@ -69,15 +69,13 @@ func val2float(v reflect.Value) float64 {
 }
 
 type MapCntOpts struct {
-	Reverse bool
-	Limit   int
-	MinVal  float64
+	Limit  int
+	MinVal float64
 }
 
 var defMapCntOpts *MapCntOpts = &MapCntOpts{
-	Reverse: false,
-	Limit:   math.MaxInt32,
-	MinVal:  0,
+	Limit:  math.MaxInt32,
+	MinVal: 0,
 }
 
 func FromMapCnt(src interface{}, opt *MapCntOpts) interface{} {
@@ -106,11 +104,7 @@ func FromMapCnt(src interface{}, opt *MapCntOpts) interface{} {
 		})
 	}
 
-	if opt.Reverse {
-		sort.Reverse(tagList(list))
-	} else {
-		sort.Sort(tagList(list))
-	}
+	sort.Sort(tagList(list))
 
 	if opt.Limit > -1 && len(list) > opt.Limit {
 		list = list[:opt.Limit]
