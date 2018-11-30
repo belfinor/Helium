@@ -1,8 +1,8 @@
 package notions
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-11-28
+// @version 1.001
+// @date    2018-11-30
 
 import (
 	"bufio"
@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/belfinor/Helium/log"
+	"github.com/belfinor/Helium/slice"
 	"github.com/belfinor/Helium/text"
 	"github.com/belfinor/Helium/text/buffer"
 	"github.com/belfinor/Helium/text/stemmer"
@@ -21,7 +22,7 @@ var known map[string]string = map[string]string{}
 
 // Fetch unknown notions with counter > 1
 //
-func FindNew(src io.RuneReader) map[string]int {
+func FindNew(src io.RuneReader) []string {
 
 	wordStream := text.WordStream(src, text.WSO_NO_URLS, text.WSO_HASHTAG, text.WSO_ENDS)
 	tokStream := stemmer.Stream(wordStream)
@@ -111,15 +112,7 @@ func FindNew(src io.RuneReader) map[string]int {
 
 	procList()
 
-	res := make(map[string]int)
-
-	for k, v := range unknown {
-		if v > 1 {
-			res[k] = v
-		}
-	}
-
-	return res
+	return slice.FromMapCnt(unknown, &slice.MapCntOpts{MinVal: 2, Limit: 1000}).([]string)
 }
 
 func load(filename string) map[string]string {
