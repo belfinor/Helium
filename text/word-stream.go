@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.007
-// @date    2018-10-23
+// @version 1.008
+// @date    2018-11-30
 
 import (
 	"io"
@@ -65,6 +65,8 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 
 		builder := strings.Builder{}
 
+		waitDot := false
+
 		for {
 
 			if state == 0 {
@@ -88,12 +90,19 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 					builder.WriteRune(run)
 					state = 1
 					st = st | ST_ALPHA
+					waitDot = true
 				} else if unicode.IsDigit(run) {
 					builder.WriteRune(run)
 					state = 1
 					st = st | ST_NUM
+					waitDot = true
 				} else if run == '#' {
 					state = 3
+				} else if opt.ends && isEndStatement(run) {
+					if waitDot {
+						waitDot = false
+						output <- "."
+					}
 				}
 
 			case 1:
@@ -147,6 +156,7 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 						} else {
 							if opt.ends && isEndStatement(run) {
 								output <- "."
+								waitDot = false
 							}
 							state = 0
 						}
@@ -173,6 +183,7 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 
 					if prev == '.' && opt.ends {
 						output <- "."
+						waitDot = false
 					}
 
 					state = 0
@@ -187,6 +198,7 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 
 					if str != "" && opt.hashTags {
 						if !opt.noNums || st&ST_ALPHA != 0 {
+							waitDot = true
 							output <- str
 						}
 					}
@@ -195,6 +207,7 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 
 						if opt.ends && isEndStatement(run) {
 							output <- "."
+							waitDot = false
 						}
 						state = 0
 					} else {
@@ -248,11 +261,12 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 			if str != "" && opt.hashTags {
 				if !opt.noNums || st&ST_ALPHA != 0 {
 					output <- str
+					waitDot = true
 				}
 			}
 		}
 
-		if opt.ends {
+		if opt.ends && waitDot {
 			output <- "."
 		}
 
