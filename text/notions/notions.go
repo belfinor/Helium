@@ -28,7 +28,7 @@ func FindNew(src io.RuneReader) []string {
 	tokStream := stemmer.Stream(wordStream)
 
 	unknown := make(map[string]int)
-	list := []string{}
+	list := make([]string, 0, 100)
 
 	bfr := buffer.New(3)
 
@@ -85,6 +85,7 @@ func FindNew(src io.RuneReader) []string {
 	procList := func() {
 
 		for _, v := range list {
+
 			if bfr.Full() {
 				procBfr()
 			}
@@ -97,8 +98,11 @@ func FindNew(src io.RuneReader) []string {
 			if bfr.Empty() {
 				break
 			}
+
+			procBfr()
 		}
 
+		list = list[:0]
 	}
 
 	for val := range tokStream {
