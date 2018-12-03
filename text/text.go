@@ -70,6 +70,17 @@ func MakePrefSuf(str string) [][]string {
 	return list
 }
 
+func Quoted(text string) string {
+
+	builder := strings.Builder{}
+
+	builder.WriteRune(chars.QUOTES_LEFT_DOUBLE)
+	builder.WriteString(text)
+	builder.WriteRune(chars.QUOTES_RIGHT_DOUBLE)
+
+	return builder.String()
+}
+
 func SubStrDistVal(str string, minlen int) map[string]int {
 
 	runes := make([]string, 0, 20)

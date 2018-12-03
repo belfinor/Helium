@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.004
-// @date    2018-08-08
+// @version 1.005
+// @date    2018-12-03
 
 import (
 	"testing"
@@ -71,4 +71,11 @@ func TestTruncate(t *testing.T) {
 		t.Fatal("Truncate not working")
 	}
 
+}
+
+func TextQuoted(t *testing.T) {
+
+	if Quoted("Привет,мир!") != "«Привет,мир!»" {
+		t.Fatal("text.Quoted not work")
+	}
 }
