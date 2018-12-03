@@ -73,7 +73,7 @@ func TestTruncate(t *testing.T) {
 
 }
 
-func TextQuoted(t *testing.T) {
+func TestTextQuoted(t *testing.T) {
 
 	if Quoted("Привет,мир!") != "«Привет,мир!»" {
 		t.Fatal("text.Quoted not work")
