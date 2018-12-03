@@ -47,6 +47,7 @@ func FindNew(src io.RuneReader) ([]string, []string) {
 				strBuilder.WriteString(v)
 				strBuilder.WriteRune(chars.ARROW_LEFT)
 				strBuilder.WriteString(k)
+				strBuilder.WriteString(" ;")
 
 				asso[strBuilder.String()]++
 
@@ -55,6 +56,7 @@ func FindNew(src io.RuneReader) ([]string, []string) {
 				strBuilder.WriteString(k)
 				strBuilder.WriteRune(chars.ARROW_LEFT)
 				strBuilder.WriteString(v)
+				strBuilder.WriteString(" ;")
 
 				asso[strBuilder.String()]++
 
