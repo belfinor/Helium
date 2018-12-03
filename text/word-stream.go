@@ -33,7 +33,7 @@ type wsOpts struct {
 }
 
 func isEndStatement(run rune) bool {
-	return run == '.' || run == '!' || run == '?' || run == '…'
+	return run == '.' || run == '!' || run == '?' || run == ';' || run == '…'
 }
 
 func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
