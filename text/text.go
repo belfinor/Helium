@@ -1,11 +1,13 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.008
-// @date    2018-08-08
+// @version 1.009
+// @date    2018-12-03
 
 import (
 	"strings"
+
+	"github.com/belfinor/Helium/chars"
 )
 
 func GetWords(text string) []string {
@@ -31,7 +33,7 @@ func Truncate(text string, limit int) string {
 		i++
 
 		if i >= limit {
-			builder.WriteString("…")
+			builder.WriteRune(chars.DOTS)
 			break
 		}
 	}
