@@ -1,8 +1,8 @@
 package notions
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-11-30
+// @version 1.002
+// @date    2018-12-03
 
 import (
 	"bufio"
@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/belfinor/Helium/chars"
 	"github.com/belfinor/Helium/log"
 	"github.com/belfinor/Helium/slice"
 	"github.com/belfinor/Helium/text"
@@ -22,15 +23,49 @@ var known map[string]string = map[string]string{}
 
 // Fetch unknown notions with counter > 1
 //
-func FindNew(src io.RuneReader) []string {
+func FindNew(src io.RuneReader) ([]string, []string) {
 
 	wordStream := text.WordStream(src, text.WSO_NO_URLS, text.WSO_HASHTAG, text.WSO_ENDS)
 	tokStream := stemmer.Stream(wordStream)
 
 	unknown := make(map[string]int)
 	list := make([]string, 0, 100)
+	used := make(map[string]bool)
+	asso := make(map[string]int)
 
 	bfr := buffer.New(3)
+
+	strBuilder := strings.Builder{}
+
+	procAsso := func() {
+
+		prev := make([]string, 0, len(used))
+
+		for k := range used {
+
+			for _, v := range prev {
+				strBuilder.WriteString(v)
+				strBuilder.WriteRune(chars.ARROW_LEFT)
+				strBuilder.WriteString(k)
+
+				asso[strBuilder.String()]++
+
+				strBuilder.Reset()
+
+				strBuilder.WriteString(k)
+				strBuilder.WriteRune(chars.ARROW_LEFT)
+				strBuilder.WriteString(v)
+
+				asso[strBuilder.String()]++
+
+				strBuilder.Reset()
+			}
+
+			prev = append(prev, k)
+		}
+
+		used = map[string]bool{}
+	}
 
 	procBfr := func() {
 
@@ -48,6 +83,7 @@ func FindNew(src io.RuneReader) []string {
 			}
 
 			if _, h := known[str]; h {
+				used[str] = true
 				bfr.Shift(3)
 				return
 			}
@@ -64,6 +100,7 @@ func FindNew(src io.RuneReader) []string {
 			}
 
 			if _, h := known[str]; h {
+				used[str] = true
 				bfr.Shift(2)
 				return
 			}
@@ -76,6 +113,8 @@ func FindNew(src io.RuneReader) []string {
 		if _, h := skip[str]; !h {
 			if _, h = known[str]; !h {
 				unknown[str]++
+			} else {
+				used[str] = true
 			}
 		}
 
@@ -103,6 +142,7 @@ func FindNew(src io.RuneReader) []string {
 		}
 
 		list = list[:0]
+		procAsso()
 	}
 
 	for val := range tokStream {
@@ -116,7 +156,7 @@ func FindNew(src io.RuneReader) []string {
 
 	procList()
 
-	return slice.FromMapCnt(unknown, &slice.MapCntOpts{MinVal: 2, Limit: 1000}).([]string)
+	return slice.FromMapCnt(unknown, &slice.MapCntOpts{MinVal: 2, Limit: 1000}).([]string), slice.FromMapCnt(asso, &slice.MapCntOpts{MinVal: 2, Limit: 1000}).([]string)
 }
 
 func load(filename string) map[string]string {
