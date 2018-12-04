@@ -47,12 +47,15 @@ const OPT_PRE int64 = 0x0000000040000000    // настоящее время
 const OPT_FUTURE int64 = 0x0000000080000000 // будущее время
 const OPT_IMP int64 = 0x0000000100000000    // повелительное наклонение
 
+const OPT_SHORT int64 = 0x0000000200000000 // краткая форма для прилагателных
+
 var optList []string = []string{"en", "ru",
 	"mr", "gr", "sr", "ml",
 	"ip", "rp", "dp", "vp", "tp", "pp",
 	"noun", "adj", "verb", "adv", "union", "pretext", "pronoun", "article", "particle", "advpart", "inter", "padj", "num",
 	"f1", "f2", "f3",
 	"undef", "past", "pre", "future", "imp",
+	"short",
 }
 
 var nameToCode map[string]int64
