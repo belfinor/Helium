@@ -25,4 +25,12 @@ func TestForms(t *testing.T) {
 	if f1.String() != "привет:ru.mr.ip.vp.noun" {
 		t.Fatal("f1.String failed")
 	}
+
+	if Parse("123:123:123") != nil {
+		t.Fatal("Parse invalid failed")
+	}
+
+	if Parse("123") == nil {
+		t.Fatal("Parse 123 failed")
+	}
 }
