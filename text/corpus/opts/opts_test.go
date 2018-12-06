@@ -11,15 +11,15 @@ import (
 func TestOpts(t *testing.T) {
 
 	// test Parse/String
-	data1 := map[string]int64{
-		"ru.mr.ip.noun": OPT_RU | OPT_NOUN | OPT_MR | OPT_IP,
-		"ru.verb.undef": OPT_RU | OPT_VERB | OPT_UNDEF,
+	data1 := map[string]int32{
+		"ru.noun.mr": OPT_RU | OPT_NOUN | OPT_MR,
+		"ru.verb":    OPT_RU | OPT_VERB,
 	}
 
 	for k, v := range data1 {
 		res := Parse(k)
 
-		if int64(res) != v {
+		if int32(res) != v {
 			t.Fatal("opts.Parse " + k + " failed")
 		}
 
@@ -29,11 +29,11 @@ func TestOpts(t *testing.T) {
 	}
 
 	// test Include
-	if Parse("ru.noun.mr.ip").Include(Parse("ru.verb.undef")) {
+	if Parse("ru.noun.mr").Include(Parse("ru.verb")) {
 		t.Fatal("opts.Include test 1 failed")
 	}
 
-	if !Parse("ru.noun.mr.ip").Include(Parse("noun.ip")) {
+	if !Parse("ru.noun.mr").Include(Parse("noun")) {
 		t.Fatal("opts.Include 2 test failed")
 	}
 }

@@ -1,72 +1,48 @@
 package opts
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-12-04
+// @version 1.001
+// @date    2018-12-05
 
 import (
 	"strings"
 )
 
-const OPT_EN int64 = 0x0000000000000001 // английский язык
-const OPT_RU int64 = 0x0000000000000002 // русский язык
+const OPT_EN int32 = 0x000001      // английский язык
+const OPT_RU int32 = 0x000002      // русский язык
+const OPT_NOUN int32 = 0x000004    // сществительное
+const OPT_ADJ int32 = 0x000008     // прилагательное
+const OPT_VERB int32 = 0x000010    // глагол
+const OPT_ADV int32 = 0x000020     // наречие
+const OPT_UNION int32 = 0x000040   // союз
+const OPT_PRETEXT int32 = 0x000080 // предлог
+const OPT_PRONOUN int32 = 0x000100 // местоимение
+const OPT_ART int32 = 0x000200     // артикль
+const OPT_PART int32 = 0x000400    // частица
+const OPT_ADVPART int32 = 0x000800 // деепричастие
+const OPT_INTER int32 = 0x001000   // междометие
+const OPT_PADJ int32 = 0x002000    // причастие
+const OPT_NUMERAL int32 = 0x004000 // числительное
+const OPT_MR int32 = 0x008000      // мужской род
+const OPT_GR int32 = 0x010000      // женский род
+const OPT_SR int32 = 0x020000      // средний род
+const OPT_ML int32 = 0x040000      // множественное число
 
-const OPT_MR int64 = 0x0000000000000004 // мужской род
-const OPT_GR int64 = 0x0000000000000008 // женский род
-const OPT_SR int64 = 0x0000000000000010 // средний род
-const OPT_ML int64 = 0x0000000000000020 // множественное число
-
-const OPT_IP int64 = 0x0000000000000040 // именительный падеж
-const OPT_RP int64 = 0x0000000000000080 // родительный падеж
-const OPT_DP int64 = 0x0000000000000100 // дательные падеж
-const OPT_VP int64 = 0x0000000000000200 // винительный падеж
-const OPT_TP int64 = 0x0000000000000400 // творительный падеж
-const OPT_PP int64 = 0x0000000000000800 // предложный падеж
-
-const OPT_NOUN int64 = 0x0000000000001000     // сществительное
-const OPT_ADJ int64 = 0x0000000000002000      // прилагательное
-const OPT_VERB int64 = 0x0000000000004000     // глагол
-const OPT_ADV int64 = 0x0000000000008000      // наречие
-const OPT_UNION int64 = 0x0000000000010000    // союз
-const OPT_PRETEXT int64 = 0x0000000000020000  // предлог
-const OPT_PRONOUN int64 = 0x0000000000040000  // местоимение
-const OPT_ARTICLE int64 = 0x0000000000080000  // артикль
-const OPT_PARTICLE int64 = 0x0000000000100000 // частица
-const OPT_ADVPART int64 = 0x0000000000200000  // деепричастие
-const OPT_INTER int64 = 0x0000000000400000    // междометие
-const OPT_PADJ int64 = 0x0000000000800000     // причастие
-const OPT_NUMERAL int64 = 0x0000000001000000  // числительное
-
-const OPT_FACE1 int64 = 0x0000000002000000 // 1-ое лицо
-const OPT_FACE2 int64 = 0x0000000004000000 // 2-ое лицо
-const OPT_FACE3 int64 = 0x0000000008000000 // 3-ье лицо
-
-const OPT_UNDEF int64 = 0x0000000010000000  // неопределенная форма
-const OPT_PAST int64 = 0x0000000020000000   // прошедшее время
-const OPT_PRE int64 = 0x0000000040000000    // настоящее время
-const OPT_FUTURE int64 = 0x0000000080000000 // будущее время
-const OPT_IMP int64 = 0x0000000100000000    // повелительное наклонение
-
-const OPT_SHORT int64 = 0x0000000200000000 // краткая форма для прилагателных
-
-var optList []string = []string{"en", "ru",
+var optList []string = []string{
+	"en", "ru",
+	"noun", "adj", "verb", "adv", "union", "pretext", "pronoun", "art", "part", "advpart", "inter", "padj", "num",
 	"mr", "gr", "sr", "ml",
-	"ip", "rp", "dp", "vp", "tp", "pp",
-	"noun", "adj", "verb", "adv", "union", "pretext", "pronoun", "article", "particle", "advpart", "inter", "padj", "num",
-	"f1", "f2", "f3",
-	"undef", "past", "pre", "future", "imp",
-	"short",
 }
 
-var nameToCode map[string]int64
-var codeToName map[int64]string
+var nameToCode map[string]int32
+var codeToName map[int32]string
 
 func init() {
 
-	code := int64(0x0000000000000001)
+	code := int32(0x00000001)
 
-	nameToCode = make(map[string]int64)
-	codeToName = make(map[int64]string)
+	nameToCode = make(map[string]int32, 32)
+	codeToName = make(map[int32]string, 32)
 
 	for _, opt := range optList {
 		nameToCode[opt] = code
@@ -76,13 +52,13 @@ func init() {
 	}
 }
 
-type Opt int64
+type Opt int32
 
 func (o Opt) String() string {
 	builder := strings.Builder{}
 
-	val := int64(o)
-	cur := int64(0x0000000000000001)
+	val := int32(o)
+	cur := int32(0x00000001)
 
 	for _, v := range optList {
 		if val&cur != 0 {
@@ -102,7 +78,7 @@ func (o Opt) Include(other Opt) bool {
 }
 
 func Parse(src string) Opt {
-	res := int64(0)
+	res := int32(0)
 
 	for _, v := range strings.Split(src, ".") {
 		if v, has := nameToCode[v]; has {

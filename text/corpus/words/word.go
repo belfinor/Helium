@@ -6,6 +6,7 @@ package words
 
 import (
 	"github.com/belfinor/Helium/text/corpus/forms"
+	"github.com/belfinor/Helium/text/corpus/opts"
 	"github.com/belfinor/Helium/text/token"
 )
 
@@ -51,4 +52,26 @@ func Parse(str string) *Word {
 	}
 
 	return w
+}
+
+func (w *Word) Form(opt opts.Opt) (string, bool) {
+
+	for _, f := range w.Forms {
+		if f.Opt.Include(opt) {
+			return f.Name, true
+		}
+	}
+
+	return "", false
+}
+
+func (w *Word) Is(name string, opt opts.Opt) bool {
+
+	for _, f := range w.Forms {
+		if f.Name == name && f.Opt.Include(opt) {
+			return true
+		}
+	}
+
+	return false
 }

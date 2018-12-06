@@ -18,3 +18,36 @@ type Record struct {
 	Name  string
 	Words []*Word
 }
+
+// get word by filter
+func (r *Record) Filter(o Opt) *Record {
+
+	var res *Record
+
+	for _, w := range r.Words {
+		if w.Is(r.Name, o) {
+			if res == nil {
+				res = &Record{
+					Name:  res.Name,
+					Words: []*Word{w},
+				}
+			} else {
+				res.Words = append(res.Words, w)
+			}
+		}
+	}
+
+	return res
+}
+
+// get form by opt
+func (r *Record) Form(o Opt) (string, bool) {
+
+	for _, w := range r.Words {
+		if str, has := w.Form(o); has {
+			return str, true
+		}
+	}
+
+	return "", false
+}
