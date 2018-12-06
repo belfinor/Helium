@@ -66,7 +66,7 @@ func (w *Word) Forms() []string {
 	return forms.Range(w.start, w.end)
 }
 
-func (w *Word) IsOpt(opt opts.Opt) bool {
+func (w *Word) HasOpt(opt opts.Opt) bool {
 
 	return w.opt.Include(opt)
 }

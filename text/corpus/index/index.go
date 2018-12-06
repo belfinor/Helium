@@ -1,8 +1,8 @@
 package index
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-12-05
+// @version 1.001
+// @date    2018-12-06
 
 import (
 	"bufio"
