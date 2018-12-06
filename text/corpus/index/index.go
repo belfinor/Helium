@@ -13,7 +13,6 @@ import (
 
 	"github.com/belfinor/Helium/log"
 	"github.com/belfinor/Helium/text/corpus/forms"
-	"github.com/belfinor/Helium/text/corpus/opts"
 	"github.com/belfinor/Helium/text/corpus/words"
 	"github.com/belfinor/Helium/time/timer"
 )
@@ -39,6 +38,8 @@ func Load(filename string) {
 func load(rh io.Reader) {
 	tm := timer.New()
 
+	frms := forms.New(65535, false)
+
 	result := make(map[string]*Record)
 
 	br := bufio.NewReader(rh)
@@ -49,17 +50,17 @@ func load(rh io.Reader) {
 			break
 		}
 
-		w := words.Parse(str)
+		w := words.Parse(str, frms)
 		if w == nil {
 			continue
 		}
 
-		for _, f := range w.Forms {
-			rec, has := result[f.Name]
+		for _, f := range w.Forms() {
+			rec, has := result[f]
 			if has {
 				rec.Words = append(rec.Words, w)
 			} else {
-				result[f.Name] = &Record{Name: f.Name, Words: []*Word{w}}
+				result[f] = &Record{Name: f, Words: []*Word{w}}
 			}
 		}
 	}
@@ -75,8 +76,6 @@ func Total() int {
 	return len(data)
 }
 
-var optNum opts.Opt = opts.Parse("num")
-
 // get corpus data for form
 func Get(f string) *Record {
 
@@ -88,12 +87,8 @@ func Get(f string) *Record {
 	if err == nil {
 
 		return &Record{
-			Name: f,
-			Words: []*Word{&Word{
-				Forms: []*forms.Form{&forms.Form{
-					Name: f,
-					Opt:  optNum,
-				}}}},
+			Name:  f,
+			Words: []*Word{words.MakeNum()},
 		}
 
 	}

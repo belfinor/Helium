@@ -22,7 +22,7 @@ func Parse(str string, f *forms.Forms) *Word {
 
 	toks := token.Make(str)
 
-	if len(toks) < 2 {
+	if len(toks) < 1 {
 		return nil
 	}
 
@@ -45,6 +45,14 @@ func Parse(str string, f *forms.Forms) *Word {
 	return w
 }
 
+func MakeNum() *Word {
+	return &Word{
+		opt:   opts.Opt(opts.OPT_NUM),
+		start: 0,
+		end:   0,
+	}
+}
+
 func (w *Word) Form(num int) string {
 
 	if num >= 0 && w.start+num < w.end {
@@ -52,6 +60,10 @@ func (w *Word) Form(num int) string {
 	}
 
 	return ""
+}
+
+func (w *Word) Forms() []string {
+	return forms.Range(w.start, w.end)
 }
 
 func (w *Word) IsOpt(opt opts.Opt) bool {

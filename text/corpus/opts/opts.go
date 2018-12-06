@@ -1,8 +1,8 @@
 package opts
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-12-05
+// @version 1.002
+// @date    2018-12-06
 
 import (
 	"strings"
@@ -27,11 +27,12 @@ const OPT_MR int32 = 0x008000      // мужской род
 const OPT_GR int32 = 0x010000      // женский род
 const OPT_SR int32 = 0x020000      // средний род
 const OPT_ML int32 = 0x040000      // множественное число
+const OPT_NUM int32 = 0x080000     // число
 
 var optList []string = []string{
 	"en", "ru",
-	"noun", "adj", "verb", "adv", "union", "pretext", "pronoun", "art", "part", "advpart", "inter", "padj", "num",
-	"mr", "gr", "sr", "ml",
+	"noun", "adj", "verb", "adv", "union", "pretext", "pronoun", "art", "part", "advpart", "inter", "padj", "numeral",
+	"mr", "gr", "sr", "ml", "num",
 }
 
 var nameToCode map[string]int32
