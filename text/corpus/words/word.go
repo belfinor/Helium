@@ -7,6 +7,8 @@ package words
 import (
 	"github.com/belfinor/Helium/text/corpus/forms"
 	"github.com/belfinor/Helium/text/corpus/opts"
+	"github.com/belfinor/Helium/text/corpus/tags"
+	"github.com/belfinor/Helium/text/corpus/types"
 	"github.com/belfinor/Helium/text/token"
 )
 
@@ -18,6 +20,7 @@ type Word struct {
 	tags  int64
 }
 
+// parse word from string
 func Parse(str string, f *forms.Forms) *Word {
 
 	toks := token.Make(str)
@@ -37,6 +40,19 @@ func Parse(str string, f *forms.Forms) *Word {
 			continue
 		}
 
+		if len(v) > 1 {
+
+			if v[0] == '%' {
+				w.types = addCode(w.tags, types.ToCode(v[1:]))
+				continue
+			}
+
+			if v[0] == '@' {
+				w.tags = addCode(w.tags, tags.ToCode(v[1:]))
+				continue
+			}
+		}
+
 		f.Add(v)
 	}
 
@@ -45,6 +61,7 @@ func Parse(str string, f *forms.Forms) *Word {
 	return w
 }
 
+// make word for number
 func MakeNum() *Word {
 	return &Word{
 		opt:   opts.Opt(opts.OPT_NUM),
@@ -53,6 +70,7 @@ func MakeNum() *Word {
 	}
 }
 
+// get from by number
 func (w *Word) Form(num int) string {
 
 	if num >= 0 && w.start+num < w.end {
@@ -62,10 +80,12 @@ func (w *Word) Form(num int) string {
 	return ""
 }
 
+// get forms slice
 func (w *Word) Forms() []string {
 	return forms.Range(w.start, w.end)
 }
 
+// check word has opt
 func (w *Word) HasOpt(opt opts.Opt) bool {
 
 	return w.opt.Include(opt)
@@ -74,8 +94,21 @@ func (w *Word) HasOpt(opt opts.Opt) bool {
 // check type usage (max type = 4)
 func (w *Word) HasType(code uint16) bool {
 
+	return hasCode(w.types, code)
+}
+
+// check tag usage (max tags = 4)
+func (w *Word) HasTag(code uint16) bool {
+
+	return hasCode(w.tags, code)
+}
+
+func hasCode(data int64, code uint16) bool {
+
 	for i := uint(0); i < 4; i++ {
-		cur := uint16(w.types>>(i*16)) & 0xffff
+
+		cur := uint16(data>>(i*16)) & 0xffff
+
 		if cur == code {
 			return true
 		}
@@ -84,15 +117,11 @@ func (w *Word) HasType(code uint16) bool {
 	return false
 }
 
-// check tag usage (max tags = 4)
-func (w *Word) HasTag(code uint16) bool {
+func addCode(src int64, code uint16) int64 {
 
-	for i := uint(0); i < 4; i++ {
-		cur := uint16(w.tags>>(i*16)) & 0xffff
-		if cur == code {
-			return true
-		}
+	if code != 0 {
+		return src<<16 | int64(code)
 	}
 
-	return false
+	return src
 }
