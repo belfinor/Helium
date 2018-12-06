@@ -1,8 +1,12 @@
 package buffer
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-11-28
+// @version 1.003
+// @date    2018-12-06
+
+import (
+	"strings"
+)
 
 type Buffer struct {
 	data  []string
@@ -73,14 +77,15 @@ func (b *Buffer) Add(str string) {
 }
 
 func (b *Buffer) Join(sep string, limit int) string {
-	res := ""
+
+	maker := strings.Builder{}
 
 	for i := 0; i < b.size && i < limit; i++ {
 		if i > 0 {
-			res += sep
+			maker.WriteString(sep)
 		}
-		res += b.Get(i)
+		maker.WriteString(b.Get(i))
 	}
 
-	return res
+	return maker.String()
 }
