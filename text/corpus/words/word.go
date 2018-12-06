@@ -1,8 +1,8 @@
 package words
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-12-05
+// @version 1.001
+// @date    2018-12-06
 
 import (
 	"github.com/belfinor/Helium/text/corpus/forms"
@@ -11,67 +11,50 @@ import (
 )
 
 type Word struct {
-	Forms []*forms.Form
-	Tags  []string
+	opt   opts.Opt
+	start int
+	end   int
+	types int64
+	tags  int64
 }
 
-func Parse(str string) *Word {
+func Parse(str string, f *forms.Forms) *Word {
 
 	toks := token.Make(str)
 
-	if len(toks) == 0 {
+	if len(toks) < 2 {
 		return nil
 	}
 
 	w := &Word{
-		Forms: []*forms.Form{},
-		Tags:  []string{},
+		opt:   opts.Parse(toks[0]),
+		start: f.Total(),
 	}
 
-	for _, v := range toks {
+	for _, v := range toks[1:] {
 
 		if len(v) == 0 {
 			continue
 		}
 
-		if v[0] == '%' && len(v) > 1 {
-			w.Tags = append(w.Tags, v[1:])
-			continue
-		}
-
-		f := forms.Parse(v)
-		if f == nil {
-			continue
-		}
-
-		w.Forms = append(w.Forms, f)
+		f.Add(v)
 	}
 
-	if len(w.Forms) == 0 {
-		return nil
-	}
+	w.end = f.Total()
 
 	return w
 }
 
-func (w *Word) Form(opt opts.Opt) (string, bool) {
+func (w *Word) Form(num int) string {
 
-	for _, f := range w.Forms {
-		if f.Opt.Include(opt) {
-			return f.Name, true
-		}
+	if num >= 0 && w.start+num < w.end {
+		return forms.Get(w.start + num)
 	}
 
-	return "", false
+	return ""
 }
 
-func (w *Word) Is(name string, opt opts.Opt) bool {
+func (w *Word) IsOpt(opt opts.Opt) bool {
 
-	for _, f := range w.Forms {
-		if f.Name == name && f.Opt.Include(opt) {
-			return true
-		}
-	}
-
-	return false
+	return w.opt.Include(opt)
 }
