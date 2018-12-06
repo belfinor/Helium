@@ -70,3 +70,29 @@ func (w *Word) HasOpt(opt opts.Opt) bool {
 
 	return w.opt.Include(opt)
 }
+
+// check type usage (max type = 4)
+func (w *Word) HasType(code uint16) bool {
+
+	for i := uint(0); i < 4; i++ {
+		cur := uint16(w.types>>(i*16)) & 0xffff
+		if cur == code {
+			return true
+		}
+	}
+
+	return false
+}
+
+// check tag usage (max tags = 4)
+func (w *Word) HasTag(code uint16) bool {
+
+	for i := uint(0); i < 4; i++ {
+		cur := uint16(w.tags>>(i*16)) & 0xffff
+		if cur == code {
+			return true
+		}
+	}
+
+	return false
+}
