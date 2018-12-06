@@ -69,7 +69,7 @@ func DetectCats(rh io.RuneReader) ([]string, bool) {
 	return nil, false
 }
 
-// orgnal word stream with agg words to phrases
+// original word stream with agg words to phrases
 func makeFormStream(input <-chan string) <-chan string {
 
 	output := make(chan string, 2048)
