@@ -1,36 +1,40 @@
 package forms
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-12-04
+// @version 1.001
+// @date    2018-12-06
 
 import (
 	"testing"
-
-	"github.com/belfinor/Helium/text/corpus/opts"
 )
 
 func TestForms(t *testing.T) {
 
-	f1 := Parse("привет:ru.noun.mr.ip.vp")
-
-	if f1.Name != "привет" {
-		t.Fatal("f1.Name failed")
+	f := New(10, false)
+	if f == nil {
+		t.Fatal("forms.New failed")
 	}
 
-	if f1.Opt != opts.Parse("ru.noun.mr.ip.vp") {
-		t.Fatal("f1.Opt failed")
+	for _, v := range []string{"1", "2", "3", "4", "5"} {
+		f.Add(v)
 	}
 
-	if f1.String() != "привет:ru.mr.ip.vp.noun" {
-		t.Fatal("f1.String failed")
+	if f.Total() != 5 {
+		t.Fatal("forms.Add/Total not work")
 	}
 
-	if Parse("123:123:123") != nil {
-		t.Fatal("Parse invalid failed")
+	if f.Get(3) != "4" {
+		t.Fatal("forms.Get not work")
 	}
 
-	if Parse("123") == nil {
-		t.Fatal("Parse 123 failed")
+	res := f.Range(1, 4)
+	if len(res) != 3 {
+		t.Fatal("forms.Range not work")
+	}
+
+	for i, v := range []string{"2", "3", "4"} {
+		if res[i] != v {
+			t.Fatal("forms.Range not work")
+		}
 	}
 }

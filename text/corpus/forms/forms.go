@@ -1,40 +1,79 @@
 package forms
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-12-04
+// @version 1.001
+// @date    2018-12-06
 
-import (
-	"strings"
+var storage *Forms
 
-	"github.com/belfinor/Helium/text/corpus/opts"
-)
-
-type Form struct {
-	Name string
-	Opt  opts.Opt
+type Forms struct {
+	last int
+	data []string
 }
 
-func Parse(str string) *Form {
-	list := strings.Split(str, ":")
-
-	switch len(list) {
-	case 1:
-		return &Form{Name: list[0], Opt: 0}
-	case 2:
-		return &Form{Name: list[0], Opt: opts.Parse(list[1])}
+func New(alloc int, def bool) *Forms {
+	if alloc < 0 {
+		alloc = 0
 	}
 
-	return nil
+	s := &Forms{
+		last: 0,
+		data: make([]string, 0, alloc),
+	}
+
+	if def {
+		storage = s
+	}
+
+	return s
 }
 
-func (f *Form) String() string {
+func Default() *Forms {
+	return storage
+}
 
-	builder := strings.Builder{}
+func SetDefault(s *Forms) {
+	storage = s
+}
 
-	builder.WriteString(f.Name)
-	builder.WriteRune(':')
-	builder.WriteString(f.Opt.String())
+func (s *Forms) Total() int {
 
-	return builder.String()
+	if s == nil {
+		return 0
+	}
+
+	return s.last
+}
+
+func (s *Forms) Add(form string) {
+	s.data = append(s.data, form)
+	s.last++
+}
+
+func (s *Forms) Range(from, to int) []string {
+	if s == nil {
+		return nil
+	}
+
+	return s.data[from:to]
+}
+
+func (s *Forms) Get(index int) string {
+	if s == nil {
+		return ""
+	}
+
+	return s.data[index]
+}
+
+func Range(from, to int) []string {
+	return storage.Range(from, to)
+}
+
+func Get(index int) string {
+	return storage.Get(index)
+}
+
+func Total() int {
+	return storage.Total()
 }
