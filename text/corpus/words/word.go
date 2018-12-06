@@ -77,7 +77,7 @@ func MakeNum() *Word {
 	}
 }
 
-// get from by number
+// get from by number (use only after corpus reload complete)
 func (w *Word) Form(num int) string {
 
 	if num >= 0 && w.start+num < w.end {
@@ -87,7 +87,7 @@ func (w *Word) Form(num int) string {
 	return ""
 }
 
-// get forms slice
+// get forms slice (use only after corpus reload complete)
 func (w *Word) Forms() []string {
 	return forms.Range(w.start, w.end)
 }

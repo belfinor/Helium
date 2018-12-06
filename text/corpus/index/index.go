@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/belfinor/Helium/log"
 	"github.com/belfinor/Helium/text/corpus/forms"
@@ -19,7 +20,7 @@ import (
 
 var data map[string]*Record = map[string]*Record{}
 
-// relaod corpus index from file
+// reload corpus index from file
 func Load(filename string) {
 
 	fh, err := os.Open(filename)
@@ -35,6 +36,14 @@ func Load(filename string) {
 
 }
 
+// reload corpus from txt
+func LoadFromString(txt string) {
+
+	log.Info("reload corpus from text")
+
+	load(strings.NewReader(txt))
+}
+
 func load(rh io.Reader) {
 	tm := timer.New()
 
@@ -43,6 +52,9 @@ func load(rh io.Reader) {
 	result := make(map[string]*Record)
 
 	br := bufio.NewReader(rh)
+
+	last := 0
+	cur := 0
 
 	for {
 		str, e := br.ReadString('\n')
@@ -55,7 +67,10 @@ func load(rh io.Reader) {
 			continue
 		}
 
-		for _, f := range w.Forms() {
+		cur = frms.Total()
+
+		fn := func(f string) {
+
 			rec, has := result[f]
 			if has {
 				rec.Words = append(rec.Words, w)
@@ -63,8 +78,14 @@ func load(rh io.Reader) {
 				result[f] = &Record{Name: f, Words: []*Word{w}}
 			}
 		}
+
+		frms.RangeFunc(last, cur, fn)
+
+		last = cur
+
 	}
 
+	forms.SetDefault(frms)
 	data = result
 
 	log.Info(fmt.Sprintf("corpus index reloaded %.4fs", tm.DeltaFloat()))

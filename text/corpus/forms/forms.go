@@ -4,6 +4,8 @@ package forms
 // @version 1.001
 // @date    2018-12-06
 
+type RANGE_FUNC func(string)
+
 var storage *Forms
 
 type Forms struct {
@@ -58,6 +60,16 @@ func (s *Forms) Range(from, to int) []string {
 	return s.data[from:to]
 }
 
+func (s *Forms) RangeFunc(from, to int, fn RANGE_FUNC) {
+	if s == nil {
+		return
+	}
+
+	for _, v := range s.data[from:to] {
+		fn(v)
+	}
+}
+
 func (s *Forms) Get(index int) string {
 	if s == nil {
 		return ""
@@ -68,6 +80,10 @@ func (s *Forms) Get(index int) string {
 
 func Range(from, to int) []string {
 	return storage.Range(from, to)
+}
+
+func RangeFunc(from, to int, fn RANGE_FUNC) {
+	storage.RangeFunc(from, to, fn)
 }
 
 func Get(index int) string {

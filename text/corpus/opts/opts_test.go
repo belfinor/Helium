@@ -1,8 +1,8 @@
 package opts
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-12-04
+// @version 1.001
+// @date    2018-12-06
 
 import (
 	"testing"
@@ -11,15 +11,15 @@ import (
 func TestOpts(t *testing.T) {
 
 	// test Parse/String
-	data1 := map[string]int32{
-		"ru.noun.mr": OPT_RU | OPT_NOUN | OPT_MR,
-		"ru.verb":    OPT_RU | OPT_VERB,
+	data1 := map[string]Opt{
+		"ru.noun.mr": Opt(OPT_RU | OPT_NOUN | OPT_MR),
+		"ru.verb":    Opt(OPT_RU | OPT_VERB),
 	}
 
 	for k, v := range data1 {
 		res := Parse(k)
 
-		if int32(res) != v {
+		if res != v {
 			t.Fatal("opts.Parse " + k + " failed")
 		}
 

@@ -12,7 +12,7 @@ func init() {
 	fromCode := make(map[uint16]string, 128)
 	toCode := make(map[string]uint16, 128)
 
-	for i, v := range []string{} {
+	for i, v := range []string{"имя", "отчество", "фамилия", "человек"} {
 		fromCode[uint16(i+1)] = v
 		toCode[v] = uint16(i + 1)
 	}
