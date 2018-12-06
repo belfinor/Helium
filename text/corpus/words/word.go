@@ -32,6 +32,10 @@ func Parse(str string, f *forms.Forms) *Word {
 		return nil
 	}
 
+	if toks[0] == ";" {
+		return nil
+	}
+
 	w := &Word{
 		opt:   opts.Parse(toks[0]),
 		start: f.Total(),
