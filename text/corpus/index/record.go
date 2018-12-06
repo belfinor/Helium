@@ -9,9 +9,10 @@ import (
 	"github.com/belfinor/Helium/text/corpus/words"
 )
 
-// word object
+// aliases for external types
 type Word = words.Word
 type Opt = opts.Opt
+type FOR_EACH_TAG_FUNC = words.FOR_EACH_TAG_FUNC
 
 // corpus index value
 type Record struct {
@@ -41,4 +42,10 @@ func (r *Record) OptForm(o Opt, num int) string {
 	}
 
 	return ""
+}
+
+func (r *Record) ForEachTags(fn FOR_EACH_TAG_FUNC) {
+	for _, w := range r.Words {
+		w.ForEachTags(fn)
+	}
 }

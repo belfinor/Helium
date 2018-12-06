@@ -12,6 +12,7 @@ import (
 	"github.com/belfinor/Helium/text"
 	"github.com/belfinor/Helium/text/buffer"
 	"github.com/belfinor/Helium/text/corpus/index"
+	"github.com/belfinor/Helium/text/corpus/statements"
 	"github.com/belfinor/Helium/time/timer"
 )
 
@@ -28,9 +29,27 @@ func DetectCats(rh io.RuneReader) ([]string, bool) {
 	wordStream := text.WordStream(rh, text.WSO_ENDS, text.WSO_NO_URLS, text.WSO_HASHTAG, text.WSO_NO_XXX_COLON)
 
 	buf := buffer.New(32)
+	st := statements.New()
+
+	addTag := func(t uint16) {
+		st.Add(t)
+	}
 
 	procBuf := func() {
+		f := buf.Get(0)
 		buf.Shift(1)
+
+		if f == "." {
+			st.Tact()
+			return
+		}
+
+		ws := index.Get(f)
+		if ws == nil {
+			return
+		}
+
+		ws.ForEachTags(addTag)
 	}
 
 	// read forms stream

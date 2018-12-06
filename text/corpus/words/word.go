@@ -20,6 +20,9 @@ type Word struct {
 	tags  int64
 }
 
+type FOR_EACH_TAG_FUNC func(uint16)
+type FOR_EACH_TYPE_FUNC func(uint16)
+
 // parse word from string
 func Parse(str string, f *forms.Forms) *Word {
 
@@ -124,4 +127,14 @@ func addCode(src int64, code uint16) int64 {
 	}
 
 	return src
+}
+
+func (w *Word) ForEachTags(fn FOR_EACH_TAG_FUNC) {
+	for i := uint(0); i < 4; i++ {
+		v := uint16((w.tags >> i * 16) & 0xffff)
+		if v == 0 {
+			break
+		}
+		fn(v)
+	}
 }
