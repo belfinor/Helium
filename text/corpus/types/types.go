@@ -1,5 +1,10 @@
 package types
 
+import (
+	"bufio"
+	"strings"
+)
+
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
 // @version 1.001
 // @date    2018-12-07
@@ -12,11 +17,37 @@ func init() {
 	fromCode = make(map[uint16]string, 128)
 	toCode = make(map[string]uint16, 128)
 
-	for i, v := range []string{"город", "имя", "лицо", "отчество", "мат", "страна", "фамилия", "человек"} {
-		fromCode[uint16(i+1)] = v
-		toCode[v] = uint16(i + 1)
-	}
+	txt := `
+	город
+	имя
+	лицо
+	мат
+	отчество
+	страна
+	фамилия
+	человек
+	`
+	br := bufio.NewReader(strings.NewReader(txt))
 
+	i := 0
+
+	for {
+
+		str, err := br.ReadString('\n')
+		if err != nil {
+			break
+		}
+
+		str = strings.TrimSpace(str)
+		if str == "" {
+			continue
+		}
+
+		fromCode[uint16(i+1)] = str
+		toCode[str] = uint16(i + 1)
+
+		i++
+	}
 }
 
 func ToCode(str string) uint16 {
