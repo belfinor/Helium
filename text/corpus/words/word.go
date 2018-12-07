@@ -1,8 +1,8 @@
 package words
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-12-06
+// @version 1.002
+// @date    2018-12-07
 
 import (
 	"github.com/belfinor/Helium/text/corpus/forms"
@@ -18,6 +18,7 @@ type Word struct {
 	end   int
 	types int64
 	tags  int64
+	forms *forms.Forms
 }
 
 type FOR_EACH_TAG_FUNC func(uint16)
@@ -39,6 +40,7 @@ func Parse(str string, f *forms.Forms) *Word {
 	w := &Word{
 		opt:   opts.Parse(toks[0]),
 		start: f.Total(),
+		forms: f,
 	}
 
 	for _, v := range toks[1:] {
@@ -77,19 +79,19 @@ func MakeNum() *Word {
 	}
 }
 
-// get from by number (use only after corpus reload complete)
+// get from by number
 func (w *Word) Form(num int) string {
 
 	if num >= 0 && w.start+num < w.end {
-		return forms.Get(w.start + num)
+		return w.forms.Get(w.start + num)
 	}
 
 	return ""
 }
 
-// get forms slice (use only after corpus reload complete)
+// get forms slice
 func (w *Word) Forms() []string {
-	return forms.Range(w.start, w.end)
+	return w.forms.Range(w.start, w.end)
 }
 
 // check word has opt

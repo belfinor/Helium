@@ -1,8 +1,8 @@
 package index
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-12-06
+// @version 1.002
+// @date    2018-12-07
 
 import (
 	"bufio"
@@ -85,7 +85,6 @@ func load(rh io.Reader) {
 
 	}
 
-	forms.SetDefault(frms)
 	data = result
 
 	log.Info(fmt.Sprintf("corpus index reloaded %.4fs", tm.DeltaFloat()))

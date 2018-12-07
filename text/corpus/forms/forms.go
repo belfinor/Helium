@@ -1,12 +1,10 @@
 package forms
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-12-06
+// @version 1.002
+// @date    2018-12-07
 
 type RANGE_FUNC func(string)
-
-var storage *Forms
 
 type Forms struct {
 	last int
@@ -23,19 +21,7 @@ func New(alloc int, def bool) *Forms {
 		data: make([]string, 0, alloc),
 	}
 
-	if def {
-		storage = s
-	}
-
 	return s
-}
-
-func Default() *Forms {
-	return storage
-}
-
-func SetDefault(s *Forms) {
-	storage = s
 }
 
 func (s *Forms) Total() int {
@@ -76,20 +62,4 @@ func (s *Forms) Get(index int) string {
 	}
 
 	return s.data[index]
-}
-
-func Range(from, to int) []string {
-	return storage.Range(from, to)
-}
-
-func RangeFunc(from, to int, fn RANGE_FUNC) {
-	storage.RangeFunc(from, to, fn)
-}
-
-func Get(index int) string {
-	return storage.Get(index)
-}
-
-func Total() int {
-	return storage.Total()
 }
