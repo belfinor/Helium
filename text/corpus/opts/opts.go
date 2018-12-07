@@ -29,12 +29,14 @@ const OPT_SR int32 = 0x020000      // средний род
 const OPT_ML int32 = 0x040000      // множественное число
 const OPT_NUM int32 = 0x080000     // число
 const OPT_EOS int32 = 0x100000     // конец предложения
+const OPT_ALIVE int32 = 0x200000   // объект является живым
 
 var optList []string = []string{
 	"en", "ru",
 	"noun", "adj", "verb", "adv", "union", "pretext", "pronoun", "art", "part", "advpart", "inter", "padj", "numeral",
 	"mr", "gr", "sr", "ml", "num",
 	"eos",
+	"alive",
 }
 
 var nameToCode map[string]int32
@@ -76,6 +78,7 @@ func (o Opt) String() string {
 	return builder.String()
 }
 
+// opt include all opts from other
 func (o Opt) Include(other Opt) bool {
 	return (o & other) == other
 }

@@ -97,20 +97,90 @@ func DetectCats(rh io.RuneReader) ([]string, bool) {
 	return res, slang > 0
 }
 
+// get *index.Record from *list.Element
+func wsFromList(e *list.Element) *index.Record {
+
+	if e == nil {
+		return nil
+	}
+
+	return index.Get(e.Value.(string))
+}
+
 // original word stream with agg words to phrases
 func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 
 	output := make(chan *index.Record, 2048)
 
-	frms := forms.New(1024)
-	dot := &index.Record{Words: []*index.Word{words.Parse("eos .", frms)}, Name: "."}
-
 	go func() {
+
+		frms := forms.New(1024)
+		dot := &index.Record{Words: []*index.Word{words.Parse("eos .", frms)}, Name: "."}
+
+		typeName := types.ToCode("имя")
+		typeSlang := types.ToCode("мат")
+		//typePatr := types.ToCode("отчество")
+		typeLName := types.ToCode("фамилия")
+		typeHuman := types.ToCode("человек")
 
 		bufSize := 3
 		buf := list.New()
 
 		builder := strings.Builder{}
+
+		tryAgg := func() {
+
+			first := buf.Front()
+
+			ws1 := wsFromList(first)
+			if ws1 == nil {
+				output <- nil
+				buf.Remove(first)
+				return
+			}
+
+			second := first.Next()
+			ws2 := wsFromList(second)
+
+			if ws2 == nil {
+				output <- ws1
+				buf.Remove(first)
+				return
+			}
+
+			if ws1.HasType(typeName) && ws2.HasType(typeLName) {
+
+				for _, nt := range []int32{opts.OPT_MR | opts.OPT_NOUN | opts.OPT_RU, opts.OPT_GR | opts.OPT_NOUN | opts.OPT_RU} {
+
+					w1 := ws1.WordByOpt(opts.Opt(nt))
+
+					if w1 != nil {
+
+						w2 := ws2.WordByOpt(opts.Opt(nt))
+						if w2 != nil {
+
+							w3 := words.NounNoun(frms, w1, w2, opts.Opt(nt|opts.OPT_ALIVE))
+							w3.AddType(typeHuman)
+
+							ws := &index.Record{
+								Name:  first.Value.(string) + " " + second.Value.(string),
+								Words: []*words.Word{w3},
+							}
+
+							output <- ws
+							buf.Remove(buf.Front())
+							buf.Remove(buf.Front())
+							return
+						}
+
+					}
+				}
+
+			}
+
+			output <- ws1
+			buf.Remove(first)
+		}
 
 		proc := func() {
 
@@ -121,7 +191,7 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 				return
 			}
 
-			for i := buf.Len(); i > 0; i-- {
+			for i := buf.Len(); i > 1; i-- {
 
 				builder.Reset()
 				rec := buf.Front()
@@ -137,7 +207,7 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 
 				if rec := index.Get(str); rec != nil {
 
-					if rec.HasType(types.ToCode("мат")) {
+					if rec.HasType(typeSlang) {
 						*slang = *slang + 1
 					}
 
@@ -150,8 +220,8 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 				}
 			}
 
-			output <- nil
-			buf.Remove(buf.Front())
+			tryAgg()
+
 		}
 
 		for w := range input {

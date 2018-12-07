@@ -106,6 +106,12 @@ func (w *Word) HasType(code uint16) bool {
 	return hasCode(w.types, code)
 }
 
+// set type
+func (w *Word) AddType(code uint16) {
+
+	w.types = addCode(w.types, code)
+}
+
 // check tag usage (max tags = 4)
 func (w *Word) HasTag(code uint16) bool {
 
@@ -143,4 +149,46 @@ func (w *Word) ForEachTags(fn FOR_EACH_TAG_FUNC) {
 		}
 		fn(v)
 	}
+}
+
+func (w *Word) IsAlive() bool {
+	return w.HasOpt(opts.Opt(opts.OPT_ALIVE))
+}
+
+func (w *Word) IsMR() bool {
+	return w.HasOpt(opts.Opt(opts.OPT_MR))
+}
+
+func (w *Word) IsGR() bool {
+	return w.HasOpt(opts.Opt(opts.OPT_GR))
+}
+
+func (w *Word) IsSR() bool {
+	return w.HasOpt(opts.Opt(opts.OPT_SR))
+}
+
+func (w *Word) IsML() bool {
+	return w.HasOpt(opts.Opt(opts.OPT_SR))
+}
+
+func NounNoun(frms *forms.Forms, w1 *Word, w2 *Word, o opts.Opt) *Word {
+	start := frms.Total()
+
+	for i, f1 := range w1.Forms() {
+		f2 := w1.Form(i)
+
+		f := f1 + " " + f2
+		frms.Add(f)
+	}
+
+	end := frms.Total()
+
+	w := &Word{
+		opt:   o,
+		start: start,
+		end:   end,
+		forms: frms,
+	}
+
+	return w
 }

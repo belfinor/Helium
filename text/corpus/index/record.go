@@ -1,8 +1,8 @@
 package index
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-12-06
+// @version 1.002
+// @date    2018-12-07
 
 import (
 	"github.com/belfinor/Helium/text/corpus/opts"
@@ -30,6 +30,17 @@ func (r *Record) HasOpt(o Opt) bool {
 	}
 
 	return false
+}
+
+func (r *Record) WordByOpt(o Opt) *Word {
+
+	for _, w := range r.Words {
+		if w.HasOpt(o) {
+			return w
+		}
+	}
+
+	return nil
 }
 
 // check has type
