@@ -1,17 +1,19 @@
 package corpus
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-12-06
+// @version 1.001
+// @date    2018-12-07
 
 import (
+	"container/list"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/belfinor/Helium/log"
 	"github.com/belfinor/Helium/text"
-	"github.com/belfinor/Helium/text/buffer"
 	"github.com/belfinor/Helium/text/corpus/index"
+	"github.com/belfinor/Helium/text/corpus/opts"
 	"github.com/belfinor/Helium/text/corpus/statements"
 	"github.com/belfinor/Helium/time/timer"
 )
@@ -28,7 +30,8 @@ func DetectCats(rh io.RuneReader) ([]string, bool) {
 	// make word stream
 	wordStream := text.WordStream(rh, text.WSO_ENDS, text.WSO_NO_URLS, text.WSO_HASHTAG, text.WSO_NO_XXX_COLON)
 
-	buf := buffer.New(32)
+	bufSize := 32
+	buf := list.New()
 	st := statements.New()
 
 	addTag := func(t uint16) {
@@ -36,16 +39,22 @@ func DetectCats(rh io.RuneReader) ([]string, bool) {
 	}
 
 	procBuf := func() {
-		f := buf.Get(0)
-		buf.Shift(1)
 
-		if f == "." {
-			st.Tact()
+		if buf.Len() == 0 {
 			return
 		}
 
-		ws := index.Get(f)
-		if ws == nil {
+		v := buf.Front().Value
+		buf.Remove(buf.Front())
+
+		if v == nil {
+			return
+		}
+
+		ws := v.(*index.Record)
+
+		if ws.HasOpt(opts.Opt(opts.OPT_EOS)) {
+			st.Tact()
 			return
 		}
 
@@ -53,16 +62,16 @@ func DetectCats(rh io.RuneReader) ([]string, bool) {
 	}
 
 	// read forms stream
-	for f := range makeFormStream(wordStream) {
+	for ws := range makeGroupStream(wordStream) {
 
-		if buf.Full() {
+		if buf.Len() >= bufSize {
 			procBuf()
 		}
 
-		buf.Add(f)
+		buf.PushBack(ws)
 	}
 
-	for buf.Full() {
+	for buf.Len() > 0 {
 		procBuf()
 	}
 
@@ -70,39 +79,57 @@ func DetectCats(rh io.RuneReader) ([]string, bool) {
 }
 
 // original word stream with agg words to phrases
-func makeFormStream(input <-chan string) <-chan string {
+func makeGroupStream(input <-chan string) <-chan *index.Record {
 
-	output := make(chan string, 2048)
+	output := make(chan *index.Record, 2048)
 
 	go func() {
 
-		buf := buffer.New(3)
+		bufSize := 3
+		buf := list.New()
+
+		builder := strings.Builder{}
 
 		proc := func() {
 
-			for i := buf.Size(); i > 1; i-- {
-				str := buf.Join(" ", i)
+			for i := buf.Len(); i > 0; i-- {
 
-				if index.Get(str) != nil {
-					buf.Shift(i)
-					output <- str
+				builder.Reset()
+				rec := buf.Front()
+
+				for j := 0; j < i; j++ {
+					if j > 0 {
+						builder.WriteRune(' ')
+					}
+					builder.WriteString(rec.Value.(string))
+				}
+
+				str := builder.String()
+
+				if rec := index.Get(str); rec != nil {
+
+					for j := 0; j < i; j++ {
+						buf.Remove(buf.Front())
+					}
+
+					output <- rec
 					return
 				}
 			}
 
-			output <- buf.Get(0)
-			buf.Shift(1)
+			output <- nil
+			buf.Remove(buf.Front())
 		}
 
 		for w := range input {
-			if buf.Full() {
+			if buf.Len() >= bufSize {
 				proc()
 			}
 
-			buf.Add(w)
+			buf.PushBack(w)
 		}
 
-		for buf.Full() {
+		for buf.Len() > 0 {
 			proc()
 		}
 
