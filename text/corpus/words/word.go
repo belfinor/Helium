@@ -52,7 +52,7 @@ func Parse(str string, f *forms.Forms) *Word {
 		if len(v) > 1 {
 
 			if v[0] == '%' {
-				w.types = addCode(w.tags, types.ToCode(v[1:]))
+				w.types = addCode(w.types, types.ToCode(v[1:]))
 				continue
 			}
 
@@ -137,7 +137,7 @@ func addCode(src int64, code uint16) int64 {
 
 func (w *Word) ForEachTags(fn FOR_EACH_TAG_FUNC) {
 	for i := uint(0); i < 4; i++ {
-		v := uint16((w.tags >> i * 16) & 0xffff)
+		v := uint16((w.tags >> (i * 16)) & 0xffff)
 		if v == 0 {
 			break
 		}

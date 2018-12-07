@@ -11,7 +11,7 @@ type Forms struct {
 	data []string
 }
 
-func New(alloc int, def bool) *Forms {
+func New(alloc int) *Forms {
 	if alloc < 0 {
 		alloc = 0
 	}

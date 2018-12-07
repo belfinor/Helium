@@ -10,7 +10,7 @@ import (
 
 func TestForms(t *testing.T) {
 
-	f := New(10, false)
+	f := New(10)
 	if f == nil {
 		t.Fatal("forms.New failed")
 	}

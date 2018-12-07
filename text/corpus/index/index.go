@@ -47,7 +47,7 @@ func LoadFromString(txt string) {
 func load(rh io.Reader) {
 	tm := timer.New()
 
-	frms := forms.New(65535, false)
+	frms := forms.New(65535)
 
 	result := make(map[string]*Record)
 

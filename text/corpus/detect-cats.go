@@ -12,11 +12,13 @@ import (
 
 	"github.com/belfinor/Helium/log"
 	"github.com/belfinor/Helium/text"
+	"github.com/belfinor/Helium/text/corpus/forms"
 	"github.com/belfinor/Helium/text/corpus/index"
 	"github.com/belfinor/Helium/text/corpus/opts"
 	"github.com/belfinor/Helium/text/corpus/statements"
 	"github.com/belfinor/Helium/text/corpus/tags"
 	"github.com/belfinor/Helium/text/corpus/types"
+	"github.com/belfinor/Helium/text/corpus/words"
 	"github.com/belfinor/Helium/time/timer"
 )
 
@@ -55,6 +57,10 @@ func DetectCats(rh io.RuneReader) ([]string, bool) {
 		}
 
 		ws := v.(*index.Record)
+
+		if ws == nil {
+			return
+		}
 
 		if ws.HasOpt(opts.Opt(opts.OPT_EOS)) {
 			st.Tact()
@@ -96,6 +102,9 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 
 	output := make(chan *index.Record, 2048)
 
+	frms := forms.New(1024)
+	dot := &index.Record{Words: []*index.Word{words.Parse("eos .", frms)}, Name: "."}
+
 	go func() {
 
 		bufSize := 3
@@ -104,6 +113,13 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 		builder := strings.Builder{}
 
 		proc := func() {
+
+			first := buf.Front().Value.(string)
+			if first == "." {
+				buf.Remove(buf.Front())
+				output <- dot
+				return
+			}
 
 			for i := buf.Len(); i > 0; i-- {
 
