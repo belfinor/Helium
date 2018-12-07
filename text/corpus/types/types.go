@@ -9,8 +9,8 @@ var toCode map[string]uint16
 
 func init() {
 
-	fromCode := make(map[uint16]string, 128)
-	toCode := make(map[string]uint16, 128)
+	fromCode = make(map[uint16]string, 128)
+	toCode = make(map[string]uint16, 128)
 
 	for i, v := range []string{"город", "имя", "лицо", "отчество", "мат", "страна", "фамилия", "человек"} {
 		fromCode[uint16(i+1)] = v

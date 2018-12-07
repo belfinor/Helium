@@ -1,16 +1,16 @@
 package tags
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-12-06
+// @version 1.001
+// @date    2018-12-07
 
 var fromCode map[uint16]string
 var toCode map[string]uint16
 
 func init() {
 
-	fromCode := make(map[uint16]string, 128)
-	toCode := make(map[string]uint16, 128)
+	fromCode = make(map[uint16]string, 128)
+	toCode = make(map[string]uint16, 128)
 
 	for i, v := range []string{"наука", "политика", "путешествия"} {
 		fromCode[uint16(i+1)] = v
