@@ -1,8 +1,8 @@
 package corpus
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-12-07
+// @version 1.002
+// @date    2018-12-08
 
 import (
 	"container/list"
@@ -119,7 +119,7 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 
 		typeName := types.ToCode("имя")
 		typeSlang := types.ToCode("мат")
-		//typePatr := types.ToCode("отчество")
+		typePatr := types.ToCode("отчество")
 		typeLName := types.ToCode("фамилия")
 		typeHuman := types.ToCode("человек")
 
@@ -148,22 +148,66 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 				return
 			}
 
-			if ws1.HasType(typeName) && ws2.HasType(typeLName) {
+			s1 := ws1
+			s2 := ws2
+
+			if ws1.HasType(typeLName) && ws2.HasType(typeName) {
+				s1 = ws2
+				s2 = ws1
+			}
+
+			if s1.HasType(typeName) && s2.HasType(typeLName) {
+
+				if s1 == ws2 {
+					ws3 := wsFromList(second.Next())
+
+					if ws3 != nil && ws3.HasType(typePatr) {
+						for _, nt := range []int32{opts.OPT_MR | opts.OPT_NOUN | opts.OPT_RU, opts.OPT_GR | opts.OPT_NOUN | opts.OPT_RU} {
+
+							w1 := ws1.WordByOpt(opts.Opt(nt))
+
+							if w1 != nil {
+
+								w2 := ws2.WordByOpt(opts.Opt(nt))
+								if w2 != nil {
+
+									w3 := ws3.WordByOpt(opts.Opt(nt))
+									if w3 != nil {
+
+										wr := words.NounNounNoun(frms, w2, w3, w1, opts.Opt(nt|opts.OPT_ALIVE))
+										wr.AddType(typeHuman)
+
+										ws := &index.Record{
+											Name:  ws2.Name + " " + ws3.Name + " " + ws1.Name,
+											Words: []*words.Word{wr},
+										}
+
+										output <- ws
+										buf.Remove(buf.Front())
+										buf.Remove(buf.Front())
+										buf.Remove(buf.Front())
+										return
+									}
+								}
+							}
+						}
+					}
+				}
 
 				for _, nt := range []int32{opts.OPT_MR | opts.OPT_NOUN | opts.OPT_RU, opts.OPT_GR | opts.OPT_NOUN | opts.OPT_RU} {
 
-					w1 := ws1.WordByOpt(opts.Opt(nt))
+					w1 := s1.WordByOpt(opts.Opt(nt))
 
 					if w1 != nil {
 
-						w2 := ws2.WordByOpt(opts.Opt(nt))
+						w2 := s2.WordByOpt(opts.Opt(nt))
 						if w2 != nil {
 
 							w3 := words.NounNoun(frms, w1, w2, opts.Opt(nt|opts.OPT_ALIVE))
 							w3.AddType(typeHuman)
 
 							ws := &index.Record{
-								Name:  first.Value.(string) + " " + second.Value.(string),
+								Name:  s1.Name + " " + s2.Name,
 								Words: []*words.Word{w3},
 							}
 
@@ -176,6 +220,68 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 					}
 				}
 
+			}
+
+			if ws1.HasType(typeName) && ws2.HasType(typePatr) {
+
+				ws3 := wsFromList(second.Next())
+
+				if ws3 != nil && ws3.HasType(typeLName) {
+					for _, nt := range []int32{opts.OPT_MR | opts.OPT_NOUN | opts.OPT_RU, opts.OPT_GR | opts.OPT_NOUN | opts.OPT_RU} {
+
+						w1 := ws1.WordByOpt(opts.Opt(nt))
+
+						if w1 != nil {
+
+							w2 := ws2.WordByOpt(opts.Opt(nt))
+							if w2 != nil {
+
+								w3 := ws3.WordByOpt(opts.Opt(nt))
+								if w3 != nil {
+
+									wr := words.NounNounNoun(frms, w1, w2, w3, opts.Opt(nt|opts.OPT_ALIVE))
+									wr.AddType(typeHuman)
+
+									ws := &index.Record{
+										Name:  ws1.Name + " " + ws2.Name + " " + ws3.Name,
+										Words: []*words.Word{wr},
+									}
+
+									output <- ws
+									buf.Remove(buf.Front())
+									buf.Remove(buf.Front())
+									buf.Remove(buf.Front())
+									return
+								}
+							}
+						}
+					}
+				}
+
+				for _, nt := range []int32{opts.OPT_MR | opts.OPT_NOUN | opts.OPT_RU, opts.OPT_GR | opts.OPT_NOUN | opts.OPT_RU} {
+
+					w1 := s1.WordByOpt(opts.Opt(nt))
+
+					if w1 != nil {
+
+						w2 := s2.WordByOpt(opts.Opt(nt))
+						if w2 != nil {
+
+							w3 := words.NounNoun(frms, w1, w2, opts.Opt(nt|opts.OPT_ALIVE))
+							w3.AddType(typeHuman)
+
+							ws := &index.Record{
+								Name:  ws1.Name + " " + ws2.Name,
+								Words: []*words.Word{w3},
+							}
+
+							output <- ws
+							buf.Remove(buf.Front())
+							buf.Remove(buf.Front())
+							return
+						}
+					}
+				}
 			}
 
 			output <- ws1

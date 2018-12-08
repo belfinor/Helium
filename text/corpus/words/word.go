@@ -1,10 +1,12 @@
 package words
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-12-07
+// @version 1.003
+// @date    2018-12-08
 
 import (
+	"strings"
+
 	"github.com/belfinor/Helium/text/corpus/forms"
 	"github.com/belfinor/Helium/text/corpus/opts"
 	"github.com/belfinor/Helium/text/corpus/tags"
@@ -174,11 +176,47 @@ func (w *Word) IsML() bool {
 func NounNoun(frms *forms.Forms, w1 *Word, w2 *Word, o opts.Opt) *Word {
 	start := frms.Total()
 
-	for i, f1 := range w1.Forms() {
-		f2 := w1.Form(i)
+	builder := strings.Builder{}
 
-		f := f1 + " " + f2
-		frms.Add(f)
+	for i, f1 := range w1.Forms() {
+
+		builder.Reset()
+
+		builder.WriteString(f1)
+		builder.WriteRune(' ')
+		builder.WriteString(w2.Form(i))
+
+		frms.Add(builder.String())
+	}
+
+	end := frms.Total()
+
+	w := &Word{
+		opt:   o,
+		start: start,
+		end:   end,
+		forms: frms,
+	}
+
+	return w
+}
+
+func NounNounNoun(frms *forms.Forms, w1 *Word, w2 *Word, w3 *Word, o opts.Opt) *Word {
+	start := frms.Total()
+
+	builder := strings.Builder{}
+
+	for i, f1 := range w1.Forms() {
+
+		builder.Reset()
+
+		builder.WriteString(f1)
+		builder.WriteRune(' ')
+		builder.WriteString(w2.Form(i))
+		builder.WriteRune(' ')
+		builder.WriteString(w3.Form(i))
+
+		frms.Add(builder.String())
 	}
 
 	end := frms.Total()
