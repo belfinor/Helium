@@ -117,12 +117,6 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 		frms := forms.New(1024)
 		dot := &index.Record{Words: []*index.Word{words.Parse("eos .", frms)}, Name: "."}
 
-		typeName := types.ToCode("имя")
-		typeSlang := types.ToCode("мат")
-		typePatr := types.ToCode("отчество")
-		typeLName := types.ToCode("фамилия")
-		typeHuman := types.ToCode("человек")
-
 		bufSize := 3
 		buf := list.New()
 
@@ -151,17 +145,17 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 			s1 := ws1
 			s2 := ws2
 
-			if ws1.HasType(typeLName) && ws2.HasType(typeName) {
+			if ws1.HasType(types.TP_LASTNAME) && ws2.HasType(types.TP_NAME) {
 				s1 = ws2
 				s2 = ws1
 			}
 
-			if s1.HasType(typeName) && s2.HasType(typeLName) {
+			if s1.HasType(types.TP_NAME) && s2.HasType(types.TP_LASTNAME) {
 
 				if s1 == ws2 {
 					ws3 := wsFromList(second.Next())
 
-					if ws3 != nil && ws3.HasType(typePatr) {
+					if ws3 != nil && ws3.HasType(types.TP_PATRONYMIC) {
 						for _, nt := range []int32{opts.OPT_MR | opts.OPT_NOUN | opts.OPT_RU, opts.OPT_GR | opts.OPT_NOUN | opts.OPT_RU} {
 
 							w1 := ws1.WordByOpt(opts.Opt(nt))
@@ -175,7 +169,7 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 									if w3 != nil {
 
 										wr := words.NounNounNoun(frms, w2, w3, w1, opts.Opt(nt|opts.OPT_ALIVE))
-										wr.AddType(typeHuman)
+										wr.AddType(types.TP_MAN)
 
 										ws := &index.Record{
 											Name:  ws2.Name + " " + ws3.Name + " " + ws1.Name,
@@ -204,7 +198,7 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 						if w2 != nil {
 
 							w3 := words.NounNoun(frms, w1, w2, opts.Opt(nt|opts.OPT_ALIVE))
-							w3.AddType(typeHuman)
+							w3.AddType(types.TP_MAN)
 
 							ws := &index.Record{
 								Name:  s1.Name + " " + s2.Name,
@@ -222,11 +216,11 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 
 			}
 
-			if ws1.HasType(typeName) && ws2.HasType(typePatr) {
+			if ws1.HasType(types.TP_NAME) && ws2.HasType(types.TP_PATRONYMIC) {
 
 				ws3 := wsFromList(second.Next())
 
-				if ws3 != nil && ws3.HasType(typeLName) {
+				if ws3 != nil && ws3.HasType(types.TP_LASTNAME) {
 					for _, nt := range []int32{opts.OPT_MR | opts.OPT_NOUN | opts.OPT_RU, opts.OPT_GR | opts.OPT_NOUN | opts.OPT_RU} {
 
 						w1 := ws1.WordByOpt(opts.Opt(nt))
@@ -240,7 +234,7 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 								if w3 != nil {
 
 									wr := words.NounNounNoun(frms, w1, w2, w3, opts.Opt(nt|opts.OPT_ALIVE))
-									wr.AddType(typeHuman)
+									wr.AddType(types.TP_MAN)
 
 									ws := &index.Record{
 										Name:  ws1.Name + " " + ws2.Name + " " + ws3.Name,
@@ -268,7 +262,7 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 						if w2 != nil {
 
 							w3 := words.NounNoun(frms, w1, w2, opts.Opt(nt|opts.OPT_ALIVE))
-							w3.AddType(typeHuman)
+							w3.AddType(types.TP_MAN)
 
 							ws := &index.Record{
 								Name:  ws1.Name + " " + ws2.Name,
@@ -313,7 +307,7 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 
 				if rec := index.Get(str); rec != nil {
 
-					if rec.HasType(typeSlang) {
+					if rec.HasType(types.TP_SLANG) {
 						*slang = *slang + 1
 					}
 
