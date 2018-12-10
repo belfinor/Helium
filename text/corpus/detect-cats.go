@@ -62,6 +62,8 @@ func DetectCats(rh io.RuneReader) ([]string, bool) {
 			return
 		}
 
+		fmt.Println(ws.Name)
+
 		if ws.HasOpt(opts.Opt(opts.OPT_EOS)) {
 			st.Tact()
 			return
@@ -301,6 +303,7 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 						builder.WriteRune(' ')
 					}
 					builder.WriteString(rec.Value.(string))
+					rec = rec.Next()
 				}
 
 				str := builder.String()

@@ -230,3 +230,83 @@ func NounNounNoun(frms *forms.Forms, w1 *Word, w2 *Word, w3 *Word, o opts.Opt) *
 
 	return w
 }
+
+func AdjNoun(frms *forms.Forms, w1 *Word, w2 *Word, o opts.Opt) *Word {
+
+	start := frms.Total()
+	builder := strings.Builder{}
+
+	for pl, op := range []opts.Opt{opts.Opt(opts.OPT_MR), opts.Opt(opts.OPT_GR), opts.Opt(opts.OPT_SR), opts.Opt(opts.OPT_ML)} {
+
+		if !w1.HasOpt(op) || !w2.HasOpt(op) {
+			continue
+		}
+
+		for i := 0; i < 6; i++ {
+
+			j := i
+
+			switch i {
+			case 2:
+				if pl == 1 {
+					j = 1
+				}
+			case 3:
+				if pl == 1 {
+					j = 2
+				} else if pl == 0 || pl == 3 {
+					if w2.HasOpt(opts.Opt(opts.OPT_ALIVE)) {
+						j = 1
+					} else {
+						j = 0
+					}
+				} else {
+					j = 0
+				}
+			case 4:
+				if pl == 1 {
+					j = 1
+				} else {
+					j = i - 1
+				}
+			case 5:
+				if pl == 1 {
+					j = 1
+				} else {
+					j = i - 1
+				}
+			}
+
+			if i == 3 {
+				if w2.HasOpt(opts.Opt(opts.OPT_ALIVE)) {
+					j = 1
+				} else {
+					j = 0
+				}
+			} else if i > 3 {
+				j = i - 1
+			}
+
+			builder.WriteString(w1.Form(j))
+			builder.WriteRune(' ')
+			builder.WriteString(w2.Form(i))
+
+			frms.Add(builder.String())
+			builder.Reset()
+
+			frms.Add(builder.String())
+			builder.Reset()
+		}
+
+		w := &Word{
+			opt:   o,
+			start: start,
+			end:   frms.Total(),
+			forms: frms,
+		}
+
+		return w
+	}
+
+	return nil
+}
