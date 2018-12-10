@@ -1,8 +1,8 @@
 package corpus
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-12-08
+// @version 1.003
+// @date    2018-12-10
 
 import (
 	"container/list"
