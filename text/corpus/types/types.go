@@ -18,6 +18,7 @@ var TP_NAME uint16
 var TP_SLANG uint16
 var TP_PATRONYMIC uint16
 var TP_FLY uint16
+var TP_PLANET uint16
 var TP_POLITIC uint16
 var TP_BIRD uint16
 var TP_FISH uint16
@@ -36,6 +37,7 @@ func init() {
 	имя
 	мат
 	отчество
+	планета
 	полет
 	политик
 	птица

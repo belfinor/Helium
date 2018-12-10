@@ -102,6 +102,11 @@ func (w *Word) HasOpt(opt opts.Opt) bool {
 	return w.opt.Include(opt)
 }
 
+// get opt code
+func (w *Word) GetOpt() opts.Opt {
+	return w.opt
+}
+
 // check type usage (max type = 4)
 func (w *Word) HasType(code uint16) bool {
 
@@ -118,6 +123,11 @@ func (w *Word) AddType(code uint16) {
 func (w *Word) HasTag(code uint16) bool {
 
 	return hasCode(w.tags, code)
+}
+
+func (w *Word) CloneTT(src *Word) {
+	w.types = src.types
+	w.tags = src.tags
 }
 
 func hasCode(data int64, code uint16) bool {
@@ -146,6 +156,16 @@ func addCode(src int64, code uint16) int64 {
 func (w *Word) ForEachTags(fn FOR_EACH_TAG_FUNC) {
 	for i := uint(0); i < 4; i++ {
 		v := uint16((w.tags >> (i * 16)) & 0xffff)
+		if v == 0 {
+			break
+		}
+		fn(v)
+	}
+}
+
+func (w *Word) ForEachTypes(fn FOR_EACH_TYPE_FUNC) {
+	for i := uint(0); i < 4; i++ {
+		v := uint16((w.types >> (i * 16)) & 0xffff)
 		if v == 0 {
 			break
 		}
@@ -185,6 +205,34 @@ func NounNoun(frms *forms.Forms, w1 *Word, w2 *Word, o opts.Opt) *Word {
 		builder.WriteString(f1)
 		builder.WriteRune(' ')
 		builder.WriteString(w2.Form(i))
+
+		frms.Add(builder.String())
+	}
+
+	end := frms.Total()
+
+	w := &Word{
+		opt:   o,
+		start: start,
+		end:   end,
+		forms: frms,
+	}
+
+	return w
+}
+
+func NounStr(frms *forms.Forms, w1 *Word, str string, o opts.Opt) *Word {
+	start := frms.Total()
+
+	builder := strings.Builder{}
+
+	for _, f1 := range w1.Forms() {
+
+		builder.Reset()
+
+		builder.WriteString(f1)
+		builder.WriteRune(' ')
+		builder.WriteString(str)
 
 		frms.Add(builder.String())
 	}

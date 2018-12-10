@@ -8,7 +8,6 @@ import (
 	"container/list"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/belfinor/Helium/log"
 	"github.com/belfinor/Helium/text"
@@ -122,8 +121,6 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 		bufSize := 3
 		buf := list.New()
 
-		builder := strings.Builder{}
-
 		tryAgg := func() {
 
 			first := buf.Front()
@@ -170,8 +167,13 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 									w3 := ws3.WordByOpt(opts.Opt(nt))
 									if w3 != nil {
 
-										wr := words.NounNounNoun(frms, w2, w3, w1, opts.Opt(nt|opts.OPT_ALIVE))
-										wr.AddType(types.TP_MAN)
+										wr := words.NounNounNoun(frms, w2, w3, w1, w1.GetOpt())
+
+										if ws := index.Get(wr.Form(0)); ws != nil {
+											ws.TT2Word(wr)
+										} else {
+											wr.AddType(types.TP_MAN)
+										}
 
 										ws := &index.Record{
 											Name:  ws2.Name + " " + ws3.Name + " " + ws1.Name,
@@ -199,8 +201,13 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 						w2 := s2.WordByOpt(opts.Opt(nt))
 						if w2 != nil {
 
-							w3 := words.NounNoun(frms, w1, w2, opts.Opt(nt|opts.OPT_ALIVE))
-							w3.AddType(types.TP_MAN)
+							w3 := words.NounNoun(frms, w1, w2, w2.GetOpt())
+
+							if ws := index.Get(w3.Form(0)); ws != nil {
+								ws.TT2Word(w3)
+							} else {
+								w3.AddType(types.TP_MAN)
+							}
 
 							ws := &index.Record{
 								Name:  s1.Name + " " + s2.Name,
@@ -235,8 +242,13 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 								w3 := ws3.WordByOpt(opts.Opt(nt))
 								if w3 != nil {
 
-									wr := words.NounNounNoun(frms, w1, w2, w3, opts.Opt(nt|opts.OPT_ALIVE))
-									wr.AddType(types.TP_MAN)
+									wr := words.NounNounNoun(frms, w1, w2, w3, w3.GetOpt())
+
+									if ws4 := index.Get(wr.Form(0)); ws4 != nil {
+										ws3.TT2Word(wr)
+									} else {
+										wr.AddType(types.TP_MAN)
+									}
 
 									ws := &index.Record{
 										Name:  ws1.Name + " " + ws2.Name + " " + ws3.Name,
@@ -263,8 +275,13 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 						w2 := s2.WordByOpt(opts.Opt(nt))
 						if w2 != nil {
 
-							w3 := words.NounNoun(frms, w1, w2, opts.Opt(nt|opts.OPT_ALIVE))
-							w3.AddType(types.TP_MAN)
+							w3 := words.NounNoun(frms, w1, w2, w2.GetOpt())
+
+							if ws3 := index.Get(w3.Form(0)); ws3 != nil {
+								ws3.TT2Word(w3)
+							} else {
+								w3.AddType(types.TP_MAN)
+							}
 
 							ws := &index.Record{
 								Name:  ws1.Name + " " + ws2.Name,
@@ -280,6 +297,89 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 				}
 			}
 
+			// check adj + noun from predef
+			if ws1.HasOpt(opts.Opt(opts.OPT_ADJ)) && ws2.HasOpt(opts.Opt(opts.OPT_NOUN)) {
+
+				for _, v := range []int32{opts.OPT_MR, opts.OPT_GR, opts.OPT_SR, opts.OPT_ML} {
+
+					w1 := ws1.WordByOpt(opts.Opt(v | opts.OPT_RU | opts.OPT_ADJ))
+					if w1 == nil {
+						continue
+					}
+
+					w2 := ws2.WordByOpt(opts.Opt(v | opts.OPT_RU | opts.OPT_NOUN))
+					if w2 == nil {
+						continue
+					}
+
+					title := w1.Form(0) + " " + w2.Form(0)
+					ws3 := index.Get(title)
+
+					if ws3 != nil {
+						w3 := words.AdjNoun(frms, w1, w2, w2.GetOpt())
+						w3.CloneTT(ws3.Words[0])
+
+						ws3 := &index.Record{
+							Name:  ws1.Name + " " + ws2.Name,
+							Words: []*words.Word{w3},
+						}
+
+						output <- ws3
+						buf.Remove(buf.Front())
+						buf.Remove(buf.Front())
+						return
+					}
+				}
+			}
+
+			// noun + noun / noun + adj + noun / noun + pretext + noun
+			if ws1.HasOpt(opts.Opt(opts.OPT_NOUN)) && ws2.HasOpt(opts.Opt(opts.OPT_NOUN)) {
+
+				ws3 := wsFromList(second.Next())
+
+				lst := []string{ws2.Name}
+
+				if ws3 != nil {
+					lst = append(lst, ws3.Name)
+				}
+
+				if len(lst) > 1 {
+					lst[0], lst[1] = lst[0]+" "+lst[1], lst[0]
+				}
+
+				for i, str := range lst {
+
+					for _, w := range ws1.Words {
+
+						title := w.Form(0) + " " + str
+
+						ws := index.Get(title)
+						if ws == nil {
+							continue
+						}
+
+						wr := words.NounStr(frms, w, str, w.GetOpt())
+
+						ws.TT2Word(wr)
+
+						ws3 := &index.Record{
+							Name:  ws1.Name + " " + str,
+							Words: []*words.Word{wr},
+						}
+
+						output <- ws3
+						buf.Remove(buf.Front())
+						buf.Remove(buf.Front())
+						if i == 0 {
+							buf.Remove(buf.Front())
+						}
+
+						return
+					}
+				}
+
+			}
+
 			output <- ws1
 			buf.Remove(first)
 		}
@@ -291,36 +391,6 @@ func makeGroupStream(input <-chan string, slang *int) <-chan *index.Record {
 				buf.Remove(buf.Front())
 				output <- dot
 				return
-			}
-
-			for i := buf.Len(); i > 1; i-- {
-
-				builder.Reset()
-				rec := buf.Front()
-
-				for j := 0; j < i; j++ {
-					if j > 0 {
-						builder.WriteRune(' ')
-					}
-					builder.WriteString(rec.Value.(string))
-					rec = rec.Next()
-				}
-
-				str := builder.String()
-
-				if rec := index.Get(str); rec != nil {
-
-					if rec.HasType(types.TP_SLANG) {
-						*slang = *slang + 1
-					}
-
-					for j := 0; j < i; j++ {
-						buf.Remove(buf.Front())
-					}
-
-					output <- rec
-					return
-				}
 			}
 
 			tryAgg()

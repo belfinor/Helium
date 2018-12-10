@@ -71,3 +71,7 @@ func (r *Record) ForEachTags(fn FOR_EACH_TAG_FUNC) {
 		w.ForEachTags(fn)
 	}
 }
+
+func (r *Record) TT2Word(w *Word) {
+	w.CloneTT(r.Words[0])
+}
