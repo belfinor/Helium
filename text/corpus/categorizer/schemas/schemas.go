@@ -11,18 +11,10 @@ import (
 	"github.com/belfinor/Helium/text/corpus/categorizer/statements"
 	"github.com/belfinor/Helium/text/corpus/index"
 	"github.com/belfinor/Helium/text/corpus/opts"
-	"github.com/belfinor/Helium/text/corpus/tags"
 	"github.com/belfinor/Helium/text/corpus/types"
 )
 
-var tab map[int64][]uint16 = map[int64][]uint16{
-	types.FromList(types.TP_FLY, types.TP_TO, types.TP_CITY):                      []uint16{tags.ToCode("путешествия")},
-	types.FromList(types.TP_FLY, types.TP_TO, types.TP_COUNTRY):                   []uint16{tags.ToCode("путешествия")},
-	types.FromList(types.TP_FLY, types.TP_ON, types.TP_PLANET):                    []uint16{tags.ToCode("космос")},
-	types.FromList(types.TP_FLY, types.TP_TO, types.TP_PLANET):                    []uint16{tags.ToCode("космос")},
-	types.FromList(types.TP_POLITIC, types.TP_FLY, types.TP_TO, types.TP_CITY):    []uint16{tags.ToCode("политика")},
-	types.FromList(types.TP_POLITIC, types.TP_FLY, types.TP_TO, types.TP_COUNTRY): []uint16{tags.ToCode("политика")},
-}
+var tab map[int64][]uint16 = map[int64][]uint16{}
 
 func Proc(buf *list.List, st *statements.Statements, trace bool) int {
 
