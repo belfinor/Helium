@@ -1,8 +1,8 @@
 package categorizer
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-12-10
+// @version 1.001
+// @date    2018-12-11
 
 import (
 	"container/list"
@@ -18,18 +18,65 @@ import (
 	"github.com/belfinor/Helium/time/timer"
 )
 
+const (
+	bufSize int = 32
+)
+
 type Engine interface {
 	Proc(io.RuneReader) ([]string, bool)
 }
 
 type engine struct {
+	st    *statements.Statements
+	slang int
+	buf   *list.List
 }
 
 func New() Engine {
-	return &engine{}
+	return &engine{
+		st:  statements.New(),
+		buf: list.New(),
+	}
+}
+
+func (eng *engine) bufProc() {
+
+	buf := eng.buf
+	st := eng.st
+
+	if buf.Len() == 0 {
+		return
+	}
+
+	v := buf.Front().Value
+	buf.Remove(buf.Front())
+
+	if v == nil {
+		return
+	}
+
+	ws := v.(*index.Record)
+
+	if ws == nil {
+		return
+	}
+
+	fmt.Println(ws.Name)
+
+	if ws.HasOpt(opts.Opt(opts.OPT_EOS)) {
+		st.Tact()
+		return
+	}
+
+	addTag := func(t uint16) {
+		st.Add(t)
+	}
+
+	ws.ForEachTags(addTag)
 }
 
 func (eng *engine) Proc(rh io.RuneReader) ([]string, bool) {
+
 	// init calc process time
 	tm := timer.New()
 	defer func() {
@@ -39,56 +86,21 @@ func (eng *engine) Proc(rh io.RuneReader) ([]string, bool) {
 	// make word stream
 	wordStream := text.WordStream(rh, text.WSO_ENDS, text.WSO_NO_URLS, text.WSO_HASHTAG, text.WSO_NO_XXX_COLON)
 
-	bufSize := 32
-	buf := list.New()
-	st := statements.New()
-	slang := int(0)
-
-	addTag := func(t uint16) {
-		st.Add(t)
-	}
-
-	procBuf := func() {
-
-		if buf.Len() == 0 {
-			return
-		}
-
-		v := buf.Front().Value
-		buf.Remove(buf.Front())
-
-		if v == nil {
-			return
-		}
-
-		ws := v.(*index.Record)
-
-		if ws == nil {
-			return
-		}
-
-		fmt.Println(ws.Name)
-
-		if ws.HasOpt(opts.Opt(opts.OPT_EOS)) {
-			st.Tact()
-			return
-		}
-
-		ws.ForEachTags(addTag)
-	}
+	buf := eng.buf
+	st := eng.st
 
 	// read forms stream
-	for ws := range wsStream(wordStream, &slang) {
+	for ws := range wsStream(wordStream, &eng.slang) {
 
 		if buf.Len() >= bufSize {
-			procBuf()
+			eng.bufProc()
 		}
 
 		buf.PushBack(ws)
 	}
 
 	for buf.Len() > 0 {
-		procBuf()
+		eng.bufProc()
 	}
 
 	result := st.Finish()
@@ -101,5 +113,5 @@ func (eng *engine) Proc(rh io.RuneReader) ([]string, bool) {
 		}
 	}
 
-	return res, slang > 0
+	return res, eng.slang > 0
 }
