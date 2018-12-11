@@ -24,12 +24,13 @@ var tab map[int64][]uint16 = map[int64][]uint16{
 	types.FromList(types.TP_POLITIC, types.TP_FLY, types.TP_TO, types.TP_COUNTRY): []uint16{tags.ToCode("политика")},
 }
 
-func Proc(buf *list.List, st *statements.Statements) int {
+func Proc(buf *list.List, st *statements.Statements, trace bool) int {
 
 	i := 0
 	j := 0
 
 	checks := make([]int64, 0, 32)
+	places := make(map[int64]int, 32)
 
 	for e := buf.Front(); e != nil && i < 4; e = e.Next() {
 
@@ -64,8 +65,16 @@ func Proc(buf *list.List, st *statements.Statements) int {
 			break
 		}
 
+		i++
+
 		if len(checks) == 0 {
 			checks = data
+
+			for _, v := range data {
+				checks = append(checks, v)
+				places[v] = j
+			}
+
 		} else {
 
 			res := make([]int64, 0, (len(checks)+1)*len(data))
@@ -73,21 +82,23 @@ func Proc(buf *list.List, st *statements.Statements) int {
 
 			for _, v1 := range checks {
 				for _, v2 := range data {
-					res = append(res, types.AppendCode(v1, uint16(v2)))
+					code := types.AppendCode(v1, uint16(v2))
+					places[code] = j
+					res = append(res, code)
 				}
 			}
 
 			checks = res
 		}
-
-		i++
 	}
 
 	var last []uint16
+	var pl int
 
 	for _, t := range checks {
 		if lst, h := tab[t]; h {
 			last = lst
+			pl = places[t]
 		}
 	}
 
@@ -97,22 +108,35 @@ func Proc(buf *list.List, st *statements.Statements) int {
 			st.Add(t)
 		}
 
-		str := ""
+		j = pl
 
-		for j > 0 {
+		if trace {
 
-			if str != "" {
-				str += " "
+			str := ""
+
+			for pl > 0 {
+
+				if str != "" {
+					str += " "
+				}
+
+				str += buf.Front().Value.(*index.Record).Name
+
+				buf.Remove(buf.Front())
+				pl--
+
 			}
 
-			str += buf.Front().Value.(*index.Record).Name
+			fmt.Println(str)
 
-			buf.Remove(buf.Front())
-			j--
+		} else {
 
+			for pl > 0 {
+				buf.Remove(buf.Front())
+				pl--
+
+			}
 		}
-
-		fmt.Println(str)
 
 		return j
 	}

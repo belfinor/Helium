@@ -31,12 +31,14 @@ type engine struct {
 	st    *statements.Statements
 	slang int
 	buf   *list.List
+	trace bool
 }
 
 func New() Engine {
 	return &engine{
-		st:  statements.New(),
-		buf: list.New(),
+		st:    statements.New(),
+		buf:   list.New(),
+		trace: true,
 	}
 }
 
@@ -49,7 +51,7 @@ func (eng *engine) bufProc() {
 		return
 	}
 
-	if schemas.Proc(buf, st) > 0 {
+	if schemas.Proc(buf, st, eng.trace) > 0 {
 		return
 	}
 
@@ -66,7 +68,9 @@ func (eng *engine) bufProc() {
 		return
 	}
 
-	fmt.Println(ws.Name)
+	if eng.trace {
+		fmt.Println(ws.Name)
+	}
 
 	if ws.HasOpt(opts.Opt(opts.OPT_EOS)) {
 		st.Tact()
