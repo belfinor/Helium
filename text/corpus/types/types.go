@@ -16,6 +16,7 @@ var TP_ABOUT uint16
 var TP_ANIMAL uint16
 var TP_BIRD uint16
 var TP_CITY uint16
+var TP_COMPANY uint16
 var TP_COUNTRY uint16
 var TP_DOT uint16
 var TP_FISH uint16
@@ -49,6 +50,7 @@ func init() {
 	из
 	имя
 	истпер
+	компания
 	мат
 	на
 	о
@@ -88,6 +90,7 @@ func init() {
 	TP_ANIMAL = ToCode("животное")
 	TP_BIRD = ToCode("птица")
 	TP_CITY = ToCode("город")
+	TP_COMPANY = ToCode("компания")
 	TP_COUNTRY = ToCode("страна")
 	TP_DOT = ToCode(".")
 	TP_FISH = ToCode("рыба")

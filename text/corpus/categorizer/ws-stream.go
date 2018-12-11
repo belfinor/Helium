@@ -261,7 +261,7 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 			}
 
 			// noun + noun / noun + adj + noun / noun + pretext + noun
-			if ws1.HasOpt(opts.Opt(opts.OPT_NOUN)) && ws2.HasOpt(opts.Opt(opts.OPT_NOUN)) {
+			if ws1.HasOpt(opts.Opt(opts.OPT_NOUN)) {
 
 				ws3 := tools.WsFromList(second.Next())
 
