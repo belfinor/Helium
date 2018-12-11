@@ -10,6 +10,7 @@ import (
 	"github.com/belfinor/Helium/text/corpus/forms"
 	"github.com/belfinor/Helium/text/corpus/index"
 	"github.com/belfinor/Helium/text/corpus/opts"
+	"github.com/belfinor/Helium/text/corpus/tools"
 	"github.com/belfinor/Helium/text/corpus/types"
 	"github.com/belfinor/Helium/text/corpus/words"
 )
@@ -22,7 +23,7 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 	go func() {
 
 		frms := forms.New(1024)
-		dot := &index.Record{Words: []*index.Word{words.Parse("eos .", frms)}, Name: "."}
+		dot := &index.Record{Words: []*index.Word{words.Parse("eos . %.", frms)}, Name: "."}
 
 		bufSize := 3
 		buf := list.New()
@@ -31,7 +32,7 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
 			first := buf.Front()
 
-			ws1 := wsFromList(first)
+			ws1 := tools.WsFromList(first)
 			if ws1 == nil {
 				output <- nil
 				buf.Remove(first)
@@ -39,7 +40,7 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 			}
 
 			second := first.Next()
-			ws2 := wsFromList(second)
+			ws2 := tools.WsFromList(second)
 
 			if ws2 == nil {
 				output <- ws1
@@ -58,7 +59,7 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 			if s1.HasType(types.TP_NAME) && s2.HasType(types.TP_LASTNAME) {
 
 				if s1 == ws2 {
-					ws3 := wsFromList(second.Next())
+					ws3 := tools.WsFromList(second.Next())
 
 					if ws3 != nil && ws3.HasType(types.TP_PATRONYMIC) {
 						for _, nt := range []int32{opts.OPT_MR | opts.OPT_NOUN | opts.OPT_RU, opts.OPT_GR | opts.OPT_NOUN | opts.OPT_RU} {
@@ -133,7 +134,7 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
 			if ws1.HasType(types.TP_NAME) && ws2.HasType(types.TP_PATRONYMIC) {
 
-				ws3 := wsFromList(second.Next())
+				ws3 := tools.WsFromList(second.Next())
 
 				if ws3 != nil && ws3.HasType(types.TP_LASTNAME) {
 					for _, nt := range []int32{opts.OPT_MR | opts.OPT_NOUN | opts.OPT_RU, opts.OPT_GR | opts.OPT_NOUN | opts.OPT_RU} {
@@ -241,7 +242,7 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 			// noun + noun / noun + adj + noun / noun + pretext + noun
 			if ws1.HasOpt(opts.Opt(opts.OPT_NOUN)) && ws2.HasOpt(opts.Opt(opts.OPT_NOUN)) {
 
-				ws3 := wsFromList(second.Next())
+				ws3 := tools.WsFromList(second.Next())
 
 				lst := []string{ws2.Name}
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/belfinor/Helium/log"
 	"github.com/belfinor/Helium/text"
+	"github.com/belfinor/Helium/text/corpus/categorizer/schemas"
 	"github.com/belfinor/Helium/text/corpus/categorizer/statements"
 	"github.com/belfinor/Helium/text/corpus/index"
 	"github.com/belfinor/Helium/text/corpus/opts"
@@ -45,6 +46,10 @@ func (eng *engine) bufProc() {
 	st := eng.st
 
 	if buf.Len() == 0 {
+		return
+	}
+
+	if schemas.Proc(buf, st) > 0 {
 		return
 	}
 

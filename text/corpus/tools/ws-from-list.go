@@ -1,8 +1,8 @@
-package categorizer
+package tools
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
 // @version 1.000
-// @date    2018-12-10
+// @date    2018-12-11
 
 import (
 	"container/list"
@@ -11,7 +11,7 @@ import (
 )
 
 // get *index.Record from *list.Element
-func wsFromList(e *list.Element) *index.Record {
+func WsFromList(e *list.Element) *index.Record {
 
 	if e == nil {
 		return nil

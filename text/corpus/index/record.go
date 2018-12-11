@@ -1,8 +1,8 @@
 package index
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-12-07
+// @version 1.003
+// @date    2018-12-11
 
 import (
 	"github.com/belfinor/Helium/text/corpus/opts"
@@ -13,6 +13,7 @@ import (
 type Word = words.Word
 type Opt = opts.Opt
 type FOR_EACH_TAG_FUNC = words.FOR_EACH_TAG_FUNC
+type FOR_EACH_TYPE_FUNC = words.FOR_EACH_TYPE_FUNC
 
 // corpus index value
 type Record struct {
@@ -69,6 +70,12 @@ func (r *Record) OptForm(o Opt, num int) string {
 func (r *Record) ForEachTags(fn FOR_EACH_TAG_FUNC) {
 	for _, w := range r.Words {
 		w.ForEachTags(fn)
+	}
+}
+
+func (r *Record) ForEachType(fn FOR_EACH_TYPE_FUNC) {
+	for _, w := range r.Words {
+		w.ForEachTypes(fn)
 	}
 }
 
