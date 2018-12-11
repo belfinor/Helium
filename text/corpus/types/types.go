@@ -20,6 +20,9 @@ var TP_COUNTRY uint16
 var TP_DOT uint16
 var TP_FISH uint16
 var TP_FLY uint16
+var TP_FOR uint16
+var TP_FROM uint16
+var TP_HPERSON uint16
 var TP_ILLNESS uint16
 var TP_LASTNAME uint16
 var TP_MAN uint16
@@ -41,8 +44,11 @@ func init() {
 	болезнь
 	в
 	город
+	для
 	животное
+	из
 	имя
+	истпер
 	мат
 	на
 	о
@@ -86,6 +92,9 @@ func init() {
 	TP_DOT = ToCode(".")
 	TP_FISH = ToCode("рыба")
 	TP_FLY = ToCode("полет")
+	TP_FOR = ToCode("для")
+	TP_FROM = ToCode("из")
+	TP_HPERSON = ToCode("истпер")
 	TP_ILLNESS = ToCode("болезнь")
 	TP_LASTNAME = ToCode("фамилия")
 	TP_MAN = ToCode("человек")

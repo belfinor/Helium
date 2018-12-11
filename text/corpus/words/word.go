@@ -125,6 +125,11 @@ func (w *Word) HasTag(code uint16) bool {
 	return hasCode(w.tags, code)
 }
 
+func (w *Word) AddTag(code uint16) {
+
+	w.tags = addCode(w.tags, code)
+}
+
 func (w *Word) CloneTT(src *Word) {
 	w.types = src.types
 	w.tags = src.tags

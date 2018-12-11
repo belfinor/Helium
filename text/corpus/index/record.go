@@ -55,6 +55,16 @@ func (r *Record) HasType(code uint16) bool {
 	return false
 }
 
+func (r *Record) WordByType(code uint16) *Word {
+	for _, w := range r.Words {
+		if w.HasType(code) {
+			return w
+		}
+	}
+
+	return nil
+}
+
 // get form by num for word include opts
 func (r *Record) OptForm(o Opt, num int) string {
 

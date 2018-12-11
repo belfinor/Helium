@@ -1,8 +1,8 @@
 package opts
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.004
-// @date    2018-12-10
+// @version 1.005
+// @date    2018-12-11
 
 import (
 	"strings"
@@ -36,6 +36,7 @@ const OPT_DP int32 = 0x01000000      // ДП
 const OPT_VP int32 = 0x02000000      // ВП
 const OPT_TP int32 = 0x04000000      // ТП
 const OPT_PP int32 = 0x08000000      // ПП
+const OPT_ROMAN int32 = 0x10000000   // ПП
 
 var optList []string = []string{
 	"en", "ru",
@@ -44,6 +45,7 @@ var optList []string = []string{
 	"eos",
 	"alive",
 	"ip", "rp", "dp", "vp", "tp", "pp",
+	"roman",
 }
 
 var nameToCode map[string]int32

@@ -10,6 +10,7 @@ import (
 	"github.com/belfinor/Helium/text/corpus/forms"
 	"github.com/belfinor/Helium/text/corpus/index"
 	"github.com/belfinor/Helium/text/corpus/opts"
+	"github.com/belfinor/Helium/text/corpus/tags"
 	"github.com/belfinor/Helium/text/corpus/tools"
 	"github.com/belfinor/Helium/text/corpus/types"
 	"github.com/belfinor/Helium/text/corpus/words"
@@ -202,6 +203,26 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 						}
 					}
 				}
+			}
+
+			if w := ws1.WordByType(types.TP_NAME); w != nil && ws2.HasOpt(opts.Opt(opts.OPT_ROMAN)) {
+				wr := words.NounStr(frms, w, ws2.Name, w.GetOpt())
+
+				wr.AddType(types.TP_MAN)
+				wr.AddType(types.TP_HPERSON)
+
+				wr.AddTag(tags.ToCode("история"))
+
+				wsr := &index.Record{
+					Name:  ws1.Name + " " + ws2.Name,
+					Words: []*words.Word{wr},
+				}
+
+				output <- wsr
+				buf.Remove(buf.Front())
+				buf.Remove(buf.Front())
+				return
+
 			}
 
 			// check adj + noun from predef
