@@ -30,6 +30,8 @@ func Parse(str string, fn FORM_CALLBACK) *Word {
 		return nil
 	}
 
+	has := make(map[string]bool)
+
 	w := &Word{
 		base: toks[1],
 		opt:  opts.Parse(toks[0]),
@@ -53,6 +55,12 @@ func Parse(str string, fn FORM_CALLBACK) *Word {
 				continue
 			}
 		}
+
+		if has[v] {
+			continue
+		}
+
+		has[v] = true
 
 		fn(v, w)
 	}
