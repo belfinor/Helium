@@ -1,8 +1,8 @@
 package index
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-12-06
+// @version 1.001
+// @date    2018-12-12
 
 import (
 	"testing"
@@ -13,8 +13,8 @@ import (
 func TestIndex(t *testing.T) {
 
 	txt := `
-ru.noun.mr президент президента президенту президента президентом президенте %человек @политика
-ru.noun.gr наука науки науке науку наукой науке %наука @наука
+ru.noun.mr президент президента президенту президентом президенте %человек @политика
+ru.noun.gr наука науки науке науку наукой %наука @наука
 ru.adj.mr российский российского российскому российским российском
 `
 
@@ -33,11 +33,11 @@ ru.adj.mr российский российского российскому р�
 		t.Fatal("index.Get not found object")
 	}
 
-	if !ws.HasOpt(Opt(opts.OPT_RU | opts.OPT_NOUN | opts.OPT_GR)) {
+	if !ws.HasOpt(opts.OPT_RU | opts.OPT_NOUN | opts.OPT_GR) {
 		t.Fatal("word наука has invalid options")
 	}
 
-	if ws.HasOpt(Opt(opts.OPT_RU | opts.OPT_ADJ | opts.OPT_GR)) {
+	if ws.HasOpt(opts.OPT_RU | opts.OPT_ADJ | opts.OPT_GR) {
 		t.Fatal("word наука has invalid options")
 	}
 }

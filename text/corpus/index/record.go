@@ -5,15 +5,11 @@ package index
 // @date    2018-12-11
 
 import (
-	"github.com/belfinor/Helium/text/corpus/opts"
 	"github.com/belfinor/Helium/text/corpus/words"
 )
 
 // aliases for external types
 type Word = words.Word
-type Opt = opts.Opt
-type FOR_EACH_TAG_FUNC = words.FOR_EACH_TAG_FUNC
-type FOR_EACH_TYPE_FUNC = words.FOR_EACH_TYPE_FUNC
 
 // corpus index value
 type Record struct {
@@ -22,7 +18,7 @@ type Record struct {
 }
 
 // check has word with oopts
-func (r *Record) HasOpt(o Opt) bool {
+func (r *Record) HasOpt(o int64) bool {
 
 	for _, w := range r.Words {
 		if w.HasOpt(o) {
@@ -33,7 +29,7 @@ func (r *Record) HasOpt(o Opt) bool {
 	return false
 }
 
-func (r *Record) WordByOpt(o Opt) *Word {
+func (r *Record) WordByOpt(o int64) *Word {
 
 	for _, w := range r.Words {
 		if w.HasOpt(o) {
@@ -65,30 +61,18 @@ func (r *Record) WordByType(code uint16) *Word {
 	return nil
 }
 
-// get form by num for word include opts
-func (r *Record) OptForm(o Opt, num int) string {
-
-	for _, w := range r.Words {
-		if w.HasOpt(o) {
-			return w.Form(num)
-		}
-	}
-
-	return ""
-}
-
-func (r *Record) ForEachTags(fn FOR_EACH_TAG_FUNC) {
+func (r *Record) ForEachTags(fn words.FOREACH_UINT16_FUNC) {
 	for _, w := range r.Words {
 		w.ForEachTags(fn)
 	}
 }
 
-func (r *Record) ForEachType(fn FOR_EACH_TYPE_FUNC) {
+func (r *Record) ForEachType(fn words.FOREACH_UINT16_FUNC) {
 	for _, w := range r.Words {
 		w.ForEachTypes(fn)
 	}
 }
 
 func (r *Record) TT2Word(w *Word) {
-	w.CloneTT(r.Words[0])
+	w.CopyTT(r.Words[0])
 }

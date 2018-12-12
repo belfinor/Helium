@@ -1,77 +1,90 @@
 package types
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.003
-// @date    2018-12-11
+// @version 1.004
+// @date    2018-12-12
 
 import (
 	"bufio"
+	"fmt"
+	"io"
+	"os"
 	"strings"
+
+	"github.com/belfinor/Helium/log"
+	"github.com/belfinor/Helium/time/timer"
 )
+
+type FOREACH_FUNC func(t uint16)
 
 var fromCode map[uint16]string
 var toCode map[string]uint16
 
-var TP_ABOUT uint16
-var TP_ANIMAL uint16
-var TP_BIRD uint16
-var TP_CITY uint16
-var TP_COMPANY uint16
-var TP_COUNTRY uint16
-var TP_DOT uint16
-var TP_FISH uint16
-var TP_FLY uint16
-var TP_FOR uint16
-var TP_FROM uint16
 var TP_HPERSON uint16
-var TP_ILLNESS uint16
 var TP_LASTNAME uint16
 var TP_MAN uint16
 var TP_NAME uint16
-var TP_ON uint16
+var TP_NUMBER uint16
 var TP_PATRONYMIC uint16
-var TP_PLANET uint16
-var TP_POLITIC uint16
+var TP_ROMAN uint16
 var TP_SLANG uint16
-var TP_TO uint16
 
 func init() {
 
 	fromCode = make(map[uint16]string, 128)
 	toCode = make(map[string]uint16, 128)
 
-	txt := `
-	.
-	болезнь
-	в
-	город
-	для
-	животное
-	из
-	имя
-	истпер
-	компания
-	мат
-	на
-	о
-	отчество
-	планета
-	полет
-	политик
-	птица
-	рыба
-	страна
-	фамилия
-	человек
-	`
-	br := bufio.NewReader(strings.NewReader(txt))
+}
 
-	i := 0
+// reload types from file
+func Load(filename string) {
+
+	fh, err := os.Open(filename)
+	if err != nil {
+		log.Error("error load corpus types from " + filename)
+		return
+	}
+	defer fh.Close()
+
+	log.Info("reload corpus types from " + filename)
+
+	load(fh)
+
+}
+
+// reload types from string
+func LoadFromString(txt string) {
+
+	log.Info("reload corpus types from text")
+
+	load(strings.NewReader(txt))
+}
+
+func load(rh io.Reader) {
+
+	tm := timer.New()
+
+	rb := bufio.NewReader(rh)
+
+	i := uint16(1)
+
+	rCode := make(map[uint16]string, 128)
+	rStr := make(map[string]uint16, 128)
+
+	appender := func(t string) {
+		if rStr[t] != 0 {
+			return
+		}
+
+		rCode[i] = t
+		rStr[t] = i
+
+		i++
+	}
 
 	for {
-
-		str, err := br.ReadString('\n')
-		if err != nil {
+		str, err := rb.ReadString('\n')
+		if err != nil && str == "" {
 			break
 		}
 
@@ -80,35 +93,27 @@ func init() {
 			continue
 		}
 
-		fromCode[uint16(i+1)] = str
-		toCode[str] = uint16(i + 1)
-
-		i++
+		appender(str)
 	}
 
-	TP_ABOUT = ToCode("о")
-	TP_ANIMAL = ToCode("животное")
-	TP_BIRD = ToCode("птица")
-	TP_CITY = ToCode("город")
-	TP_COMPANY = ToCode("компания")
-	TP_COUNTRY = ToCode("страна")
-	TP_DOT = ToCode(".")
-	TP_FISH = ToCode("рыба")
-	TP_FLY = ToCode("полет")
-	TP_FOR = ToCode("для")
-	TP_FROM = ToCode("из")
-	TP_HPERSON = ToCode("истпер")
-	TP_ILLNESS = ToCode("болезнь")
-	TP_LASTNAME = ToCode("фамилия")
-	TP_MAN = ToCode("человек")
-	TP_NAME = ToCode("имя")
-	TP_ON = ToCode("на")
-	TP_PATRONYMIC = ToCode("отчество")
-	TP_PLANET = ToCode("планета")
-	TP_POLITIC = ToCode("политик")
-	TP_SLANG = ToCode("мат")
-	TP_TO = ToCode("в")
+	for _, t := range []string{"имя", "истлицо", "мат", "отчество", "римскцифра", "фамилия", "человек", "число"} {
+		appender(t)
+	}
 
+	fromCode = rCode
+	toCode = rStr
+
+	TP_HPERSON = toCode["истлицо"]
+	TP_MAN = toCode["человек"]
+	TP_NAME = toCode["имя"]
+	TP_NUMBER = toCode["число"]
+	TP_LASTNAME = toCode["фамилия"]
+	TP_PATRONYMIC = toCode["отчество"]
+	TP_ROMAN = toCode["римскцифра"]
+	TP_SLANG = toCode["мат"]
+
+	log.Info(fmt.Sprintf("corpus types reloaded %.4fs", tm.DeltaFloat()))
+	log.Info(fmt.Sprintf("corpus types size = %d", Total()))
 }
 
 func ToCode(str string) uint16 {
@@ -127,16 +132,54 @@ func FromCode(code uint16) string {
 	return ""
 }
 
-func FromList(lst ...uint16) int64 {
+func Join(lst ...uint16) int64 {
 	val := int64(0)
 
 	for _, v := range lst {
-		val = (val << 16) | int64(v)
+		val = Append(val, v)
 	}
 
 	return val
 }
 
-func AppendCode(val int64, code uint16) int64 {
-	return (val << 16) | int64(code)
+func Append(val int64, code uint16) int64 {
+
+	if code == 0 {
+		return val
+	}
+
+	nv := int64(code)
+
+	for i := 0; i < 4; i++ {
+		if (val>>uint(16*i))&0xffff == nv {
+			return val
+		}
+	}
+
+	return (val << 16) | nv
+}
+
+func Total() int {
+	return len(fromCode)
+}
+
+func ForEach(v int64, fn FOREACH_FUNC) {
+	for i := uint(0); i < 4; i++ {
+		code := uint16((v >> (i * 16)) & 0xffff)
+		if code != 0 {
+			fn(code)
+		}
+	}
+}
+
+func Has(val int64, code uint16) bool {
+	nv := int64(code)
+
+	for i := 0; i < 4; i++ {
+		if (val>>uint(16*i))&0xffff == nv {
+			return true
+		}
+	}
+
+	return false
 }
