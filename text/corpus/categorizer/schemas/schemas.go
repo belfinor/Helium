@@ -74,7 +74,7 @@ func Proc(buf *list.List, st *statements.Statements, trace bool) int {
 
 			for _, v1 := range checks {
 				for _, v2 := range data {
-					code := types.Append(v1, uint16(v2))
+					code := types.AppendCircle(v1, uint16(v2))
 					places[code] = j
 					res = append(res, code)
 				}

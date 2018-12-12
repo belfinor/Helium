@@ -162,6 +162,17 @@ func Append(val int64, code uint16) int64 {
 	return (val << 16) | nv
 }
 
+func AppendCircle(val int64, code uint16) int64 {
+
+	if code == 0 {
+		return val
+	}
+
+	nv := int64(code)
+
+	return (val << 16) | nv
+}
+
 func Total() int {
 	return len(fromCode)
 }
