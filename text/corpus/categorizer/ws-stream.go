@@ -7,6 +7,7 @@ package categorizer
 import (
 	"container/list"
 
+	"github.com/belfinor/Helium/text"
 	"github.com/belfinor/Helium/text/corpus/index"
 	"github.com/belfinor/Helium/text/corpus/opts"
 	"github.com/belfinor/Helium/text/corpus/tags"
@@ -83,6 +84,7 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 	go func() {
 
 		dot := &index.Record{Words: []*index.Word{words.Parse("eos . %.", func(f string, w *index.Word) {})}, Name: "."}
+		comma := &index.Record{Words: []*index.Word{words.Parse("sep "+text.WS_COMMA+" %,", func(f string, w *index.Word) {})}, Name: ","}
 
 		bufSize := 3
 		buf := list.New()
@@ -294,6 +296,12 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 			if first == "." {
 				buf.Remove(buf.Front())
 				output <- dot
+				return
+			}
+
+			if first == text.WS_COMMA {
+				buf.Remove(buf.Front())
+				output <- comma
 				return
 			}
 

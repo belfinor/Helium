@@ -37,6 +37,7 @@ const OPT_VP int64 = 0x02000000      // ВП
 const OPT_TP int64 = 0x04000000      // ТП
 const OPT_PP int64 = 0x08000000      // ПП
 const OPT_ROMAN int64 = 0x10000000   // ПП
+const OPT_SEP int64 = 0x20000000     // SEP (NOT STETEMENT END!)
 
 var optList []string = []string{
 	"en", "ru",
@@ -46,6 +47,7 @@ var optList []string = []string{
 	"alive",
 	"ip", "rp", "dp", "vp", "tp", "pp",
 	"roman",
+	"sep",
 }
 
 var nameToCode map[string]int64
