@@ -5,6 +5,8 @@ package words
 // @date    2018-12-12
 
 import (
+	"strings"
+
 	"github.com/belfinor/Helium/text/corpus/opts"
 	"github.com/belfinor/Helium/text/corpus/tags"
 	"github.com/belfinor/Helium/text/corpus/types"
@@ -12,7 +14,7 @@ import (
 )
 
 type Word struct {
-	base  string
+	Base  string
 	opt   int64
 	types int64
 	tags  int64
@@ -33,7 +35,7 @@ func Parse(str string, fn FORM_CALLBACK) *Word {
 	has := make(map[string]bool)
 
 	w := &Word{
-		base: toks[1],
+		Base: toks[1],
 		opt:  opts.Parse(toks[0]),
 	}
 
@@ -71,7 +73,7 @@ func Parse(str string, fn FORM_CALLBACK) *Word {
 // make word for number
 func MakeNum(str string) *Word {
 	return &Word{
-		base:  str,
+		Base:  str,
 		opt:   opts.OPT_NUM,
 		types: int64(types.TP_NUMBER),
 	}
@@ -128,4 +130,25 @@ func (w *Word) AddTag(code uint16) {
 
 func (w *Word) ForEachTags(fn FOREACH_UINT16_FUNC) {
 	tags.ForEach(w.tags, tags.FOREACH_FUNC(fn))
+}
+
+// Join words to single
+
+func Join(o int64, wl ...*Word) *Word {
+
+	builder := strings.Builder{}
+
+	for i, w := range wl {
+
+		if i > 0 {
+			builder.WriteRune(' ')
+		}
+
+		builder.WriteString(w.Base)
+	}
+
+	return &Word{
+		Base: builder.String(),
+		opt:  o,
+	}
 }

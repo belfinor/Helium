@@ -8,9 +8,72 @@ import (
 	"container/list"
 
 	"github.com/belfinor/Helium/text/corpus/index"
+	"github.com/belfinor/Helium/text/corpus/opts"
+	"github.com/belfinor/Helium/text/corpus/tags"
 	"github.com/belfinor/Helium/text/corpus/tools"
+	"github.com/belfinor/Helium/text/corpus/types"
 	"github.com/belfinor/Helium/text/corpus/words"
 )
+
+func tryFind(pref string, e *list.Element, level int) (*index.Record, int) {
+
+	if level > 3 || e == nil {
+		return nil, 0
+	}
+
+	ws := tools.WsFromList(e)
+	if ws == nil {
+		return nil, 0
+	}
+
+	var res *index.Record
+	var maxLevel int
+
+	upRes := func(rec *index.Record, level int) {
+		if rec != nil && level > maxLevel {
+			res, maxLevel = rec, level
+		}
+	}
+
+	if level > 1 {
+
+		r := index.Get(pref + " " + ws.Name)
+		if r != nil {
+			upRes(r, level)
+		} else {
+
+			for _, w := range ws.Words {
+				r := index.Get(pref + " " + w.Base)
+				if r != nil {
+					upRes(r, level)
+					break
+				}
+			}
+
+		}
+
+	}
+
+	if level == 1 {
+		upRes(tryFind(ws.Name, e.Next(), level+1))
+	} else {
+		upRes(tryFind(pref+" "+ws.Name, e.Next(), level+1))
+	}
+
+	for _, w := range ws.Words {
+
+		if level == 1 {
+			upRes(tryFind(w.Base, e.Next(), level+1))
+		} else {
+			upRes(tryFind(pref+" "+w.Base, e.Next(), level+1))
+		}
+
+	}
+
+	return res, maxLevel
+}
+
+var wsAgreed []int64 = []int64{opts.OPT_MR, opts.OPT_GR, opts.OPT_EN}
 
 // original word stream with agg words to phrases
 func wsStream(input <-chan string, slang *int) <-chan *index.Record {
@@ -28,6 +91,16 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
 			first := buf.Front()
 
+			res, level := tryFind("", first, 1)
+			if res != nil && level > 1 {
+				output <- res
+				for level > 0 {
+					buf.Remove(buf.Front())
+					level--
+				}
+				return
+			}
+
 			ws1 := tools.WsFromList(first)
 			if ws1 == nil {
 				output <- nil
@@ -37,11 +110,92 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
 			second := first.Next()
 			ws2 := tools.WsFromList(second)
-
 			if ws2 == nil {
 				output <- ws1
 				buf.Remove(first)
 				return
+			}
+
+			if ws1.HasType(types.TP_NAME) {
+
+				// иван иванов
+				if ws2.HasType(types.TP_LASTNAME) {
+
+					for _, t := range wsAgreed {
+						w1 := ws1.WordByOpt(t)
+						if w1 != nil {
+							if w2 := ws2.WordByOpt(t); w2 != nil {
+
+								wr := words.Join(w1.GetOpt(), w1, w2)
+
+								wr.AddType(types.TP_MAN)
+
+								wsr := &index.Record{
+									Name:  ws1.Name + " " + ws2.Name,
+									Words: []*words.Word{wr},
+								}
+
+								output <- wsr
+								buf.Remove(buf.Front())
+								buf.Remove(buf.Front())
+								return
+							}
+						}
+					}
+				}
+
+				// петр i
+				if ws2.HasType(types.TP_ROMAN) {
+
+					w1 := ws1.WordByType(types.TP_NAME)
+
+					wr := words.Join(w1.GetOpt(), w1, ws2.Words[0])
+
+					wr.AddTag(tags.ToCode("история"))
+					wr.AddType(types.TP_HPERSON)
+
+					wsr := &index.Record{
+						Name:  ws1.Name + " " + ws2.Name,
+						Words: []*words.Word{wr},
+					}
+
+					output <- wsr
+					buf.Remove(buf.Front())
+					buf.Remove(buf.Front())
+					return
+				}
+
+			}
+
+			if ws1.HasType(types.TP_LASTNAME) {
+
+				// иванов иван -> иван иванов
+				if ws2.HasType(types.TP_NAME) {
+
+					for _, t := range wsAgreed {
+						w1 := ws1.WordByOpt(t)
+						if w1 != nil {
+							if w2 := ws2.WordByOpt(t); w2 != nil {
+
+								wr := words.Join(w1.GetOpt(), w2, w1)
+
+								wr.AddType(types.TP_MAN)
+
+								wsr := &index.Record{
+									Name:  ws2.Name + " " + ws1.Name,
+									Words: []*words.Word{wr},
+								}
+
+								output <- wsr
+								buf.Remove(buf.Front())
+								buf.Remove(buf.Front())
+								return
+							}
+						}
+					}
+
+				}
+
 			}
 
 			output <- ws1
