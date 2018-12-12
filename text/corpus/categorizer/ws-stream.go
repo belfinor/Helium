@@ -6,6 +6,7 @@ package categorizer
 
 import (
 	"container/list"
+	"strconv"
 
 	"github.com/belfinor/Helium/text"
 	"github.com/belfinor/Helium/text/corpus/index"
@@ -284,6 +285,55 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
 				}
 
+			}
+
+			if ws1.HasType(types.TP_NUMBER) {
+
+				v, _ := strconv.Atoi(ws1.Name)
+
+				if v > 300 && v < 2000 {
+
+					for _, w := range ws2.Words {
+						if w.Base == "год" || w.Base == "годы" {
+							wr := words.Join(0, ws1.Words[0], w)
+
+							wr.AddType(types.TP_HDATE)
+							wr.AddTag(tags.ToCode("история"))
+
+							wsr := &index.Record{
+								Name:  ws1.Name + " " + ws2.Name,
+								Words: []*words.Word{wr},
+							}
+
+							output <- wsr
+							buf.Remove(buf.Front())
+							buf.Remove(buf.Front())
+							return
+						}
+					}
+				}
+			}
+
+			if ws1.HasType(types.TP_ROMAN) {
+
+				for _, w := range ws2.Words {
+					if w.Base == "век" {
+						wr := words.Join(0, ws1.Words[0], w)
+
+						wr.AddType(types.TP_HDATE)
+						wr.AddTag(tags.ToCode("история"))
+
+						wsr := &index.Record{
+							Name:  ws1.Name + " " + ws2.Name,
+							Words: []*words.Word{wr},
+						}
+
+						output <- wsr
+						buf.Remove(buf.Front())
+						buf.Remove(buf.Front())
+						return
+					}
+				}
 			}
 
 			output <- ws1

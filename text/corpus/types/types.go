@@ -20,6 +20,7 @@ type FOREACH_FUNC func(t uint16)
 var fromCode map[uint16]string
 var toCode map[string]uint16
 
+var TP_HDATE uint16
 var TP_HPERSON uint16
 var TP_LASTNAME uint16
 var TP_MAN uint16
@@ -96,13 +97,14 @@ func load(rh io.Reader) {
 		appender(str)
 	}
 
-	for _, t := range []string{"имя", "истлицо", "мат", "отчество", "римскцифра", "фамилия", "человек", "число", ".", ","} {
+	for _, t := range []string{"имя", "истдата", "истлицо", "мат", "отчество", "римскцифра", "фамилия", "человек", "число", ".", ","} {
 		appender(t)
 	}
 
 	fromCode = rCode
 	toCode = rStr
 
+	TP_HDATE = toCode["истдата"]
 	TP_HPERSON = toCode["истлицо"]
 	TP_MAN = toCode["человек"]
 	TP_NAME = toCode["имя"]
@@ -111,6 +113,7 @@ func load(rh io.Reader) {
 	TP_PATRONYMIC = toCode["отчество"]
 	TP_ROMAN = toCode["римскцифра"]
 	TP_SLANG = toCode["мат"]
+	TP_HDATE = toCode["истдата"]
 
 	log.Info(fmt.Sprintf("corpus types reloaded %.4fs", tm.DeltaFloat()))
 	log.Info(fmt.Sprintf("corpus types size = %d", Total()))

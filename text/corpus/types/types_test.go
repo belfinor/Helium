@@ -39,7 +39,7 @@ func TestTypes(t *testing.T) {
 		t.Fatal("Append not work")
 	}
 
-	if Total() != 11 {
+	if Total() != 12 {
 		t.Fatal("Total not work")
 	}
 
