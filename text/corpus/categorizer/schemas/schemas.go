@@ -45,7 +45,7 @@ func Proc(buf *list.List, st *statements.Statements, trace bool) int {
 
 		if len(data) == 0 {
 
-			if ws.HasOpt(opts.Opt(opts.OPT_ADJ)) && i > 0 {
+			if ws.HasOpt(opts.OPT_ADJ) && i > 0 {
 				continue
 			}
 
@@ -74,7 +74,7 @@ func Proc(buf *list.List, st *statements.Statements, trace bool) int {
 
 			for _, v1 := range checks {
 				for _, v2 := range data {
-					code := types.AppendCode(v1, uint16(v2))
+					code := types.Append(v1, uint16(v2))
 					places[code] = j
 					res = append(res, code)
 				}

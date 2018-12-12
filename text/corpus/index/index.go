@@ -1,8 +1,8 @@
 package index
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-12-07
+// @version 1.003
+// @date    2018-12-12
 
 import (
 	"bufio"
@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/belfinor/Helium/log"
-	"github.com/belfinor/Helium/text/corpus/forms"
 	"github.com/belfinor/Helium/text/corpus/words"
 	"github.com/belfinor/Helium/time/timer"
 )
@@ -47,42 +46,31 @@ func LoadFromString(txt string) {
 func load(rh io.Reader) {
 	tm := timer.New()
 
-	frms := forms.New(65535)
-
 	result := make(map[string]*Record)
 
 	br := bufio.NewReader(rh)
 
-	last := 0
-	cur := 0
+	callback := func(f string, w *Word) {
+
+		rec, has := result[f]
+		if has {
+			rec.Words = append(rec.Words, w)
+		} else {
+			result[f] = &Record{Name: f, Words: []*Word{w}}
+		}
+
+	}
 
 	for {
 		str, e := br.ReadString('\n')
-		if e != nil {
+		if e != nil && str == "" {
 			break
 		}
 
-		w := words.Parse(str, frms)
+		w := words.Parse(str, callback)
 		if w == nil {
 			continue
 		}
-
-		cur = frms.Total()
-
-		fn := func(f string) {
-
-			rec, has := result[f]
-			if has {
-				rec.Words = append(rec.Words, w)
-			} else {
-				result[f] = &Record{Name: f, Words: []*Word{w}}
-			}
-		}
-
-		frms.RangeFunc(last, cur, fn)
-
-		last = cur
-
 	}
 
 	data = result
@@ -108,7 +96,7 @@ func Get(f string) *Record {
 
 		return &Record{
 			Name:  f,
-			Words: []*Word{words.MakeNum()},
+			Words: []*Word{words.MakeNum(f)},
 		}
 
 	}

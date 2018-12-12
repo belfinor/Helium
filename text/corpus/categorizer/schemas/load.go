@@ -73,7 +73,7 @@ func load(rh io.Reader) {
 				continue
 			}
 
-			code = types.AppendCode(code, types.ToCode(v))
+			code = types.Append(code, types.ToCode(v))
 		}
 
 		if code == 0 {

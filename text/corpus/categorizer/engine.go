@@ -72,7 +72,7 @@ func (eng *engine) bufProc() {
 		fmt.Println(ws.Name)
 	}
 
-	if ws.HasOpt(opts.Opt(opts.OPT_EOS)) {
+	if ws.HasOpt(opts.OPT_EOS) {
 		st.Tact()
 		return
 	}
