@@ -144,6 +144,62 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 					}
 				}
 
+				// иван иванович
+				if ws2.HasType(types.TP_PATRONYMIC) {
+
+					// try иван иванович иванов
+					ws3 := tools.WsFromList(second.Next())
+					if ws3 != nil && ws3.HasType(types.TP_LASTNAME) {
+
+						for _, t := range wsAgreed {
+							w1 := ws1.WordByOpt(t)
+							if w1 != nil {
+								if w2 := ws2.WordByOpt(t); w2 != nil {
+									if w3 := ws3.WordByOpt(t); w3 != nil {
+										wr := words.Join(w1.GetOpt(), w1, w2, w3)
+
+										wr.AddType(types.TP_MAN)
+
+										wsr := &index.Record{
+											Name:  ws1.Name + " " + ws2.Name + " " + ws3.Name,
+											Words: []*words.Word{wr},
+										}
+
+										output <- wsr
+										buf.Remove(buf.Front())
+										buf.Remove(buf.Front())
+										buf.Remove(buf.Front())
+										return
+									}
+								}
+							}
+						}
+
+					}
+
+					for _, t := range wsAgreed {
+						w1 := ws1.WordByOpt(t)
+						if w1 != nil {
+							if w2 := ws2.WordByOpt(t); w2 != nil {
+
+								wr := words.Join(w1.GetOpt(), w1, w2)
+
+								wr.AddType(types.TP_MAN)
+
+								wsr := &index.Record{
+									Name:  ws1.Name + " " + ws2.Name,
+									Words: []*words.Word{wr},
+								}
+
+								output <- wsr
+								buf.Remove(buf.Front())
+								buf.Remove(buf.Front())
+								return
+							}
+						}
+					}
+				}
+
 				// петр i
 				if ws2.HasType(types.TP_ROMAN) {
 
@@ -171,6 +227,36 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
 				// иванов иван -> иван иванов
 				if ws2.HasType(types.TP_NAME) {
+
+					// try иванов иван иванович -> иван иванович иванов
+					ws3 := tools.WsFromList(second.Next())
+					if ws3 != nil && ws3.HasType(types.TP_PATRONYMIC) {
+
+						for _, t := range wsAgreed {
+							w1 := ws1.WordByOpt(t)
+							if w1 != nil {
+								if w2 := ws2.WordByOpt(t); w2 != nil {
+									if w3 := ws3.WordByOpt(t); w3 != nil {
+										wr := words.Join(w1.GetOpt(), w2, w3, w1)
+
+										wr.AddType(types.TP_MAN)
+
+										wsr := &index.Record{
+											Name:  ws2.Name + " " + ws3.Name + " " + ws1.Name,
+											Words: []*words.Word{wr},
+										}
+
+										output <- wsr
+										buf.Remove(buf.Front())
+										buf.Remove(buf.Front())
+										buf.Remove(buf.Front())
+										return
+									}
+								}
+							}
+						}
+
+					}
 
 					for _, t := range wsAgreed {
 						w1 := ws1.WordByOpt(t)
