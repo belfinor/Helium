@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.008
-// @date    2018-11-30
+// @version 1.009
+// @date    2018-12-12
 
 import (
 	"io"
@@ -22,6 +22,8 @@ const (
 	ST_NULL  int = 0
 	ST_NUM   int = 1
 	ST_ALPHA int = 2
+
+	WS_COMMA string = ":comma:"
 )
 
 type wsOpts struct {
@@ -34,6 +36,10 @@ type wsOpts struct {
 
 func isEndStatement(run rune) bool {
 	return run == '.' || run == '!' || run == '?' || run == ';' || run == '…'
+}
+
+func isCommaStyle(run rune) bool {
+	return run == ',' || run == ':' || run == '"' || run == '«' || run == '»'
 }
 
 func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
@@ -141,6 +147,7 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 								output <- str
 							}
 							builder.Reset()
+
 							state = 0
 						}
 
@@ -158,6 +165,12 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 								output <- "."
 								waitDot = false
 							}
+
+							if opt.ends && isCommaStyle(run) {
+								output <- WS_COMMA
+								waitDot = false
+							}
+
 							state = 0
 						}
 					}
@@ -184,6 +197,11 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 					if prev == '.' && opt.ends {
 						output <- "."
 						waitDot = false
+					} else {
+						if opt.ends && isCommaStyle(run) {
+							output <- WS_COMMA
+							waitDot = false
+						}
 					}
 
 					state = 0
@@ -209,6 +227,12 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 							output <- "."
 							waitDot = false
 						}
+
+						if opt.ends && isCommaStyle(run) {
+							output <- WS_COMMA
+							waitDot = false
+						}
+
 						state = 0
 					} else {
 						st = ST_NULL
