@@ -1,8 +1,8 @@
 package schemas
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-12-11
+// @version 1.001
+// @date    2018-12-12
 
 import (
 	"container/list"
