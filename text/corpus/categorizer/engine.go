@@ -25,6 +25,7 @@ const (
 
 type Engine interface {
 	Proc(io.RuneReader) ([]string, bool)
+	EnableTrace(bool)
 }
 
 type engine struct {
@@ -38,8 +39,12 @@ func New() Engine {
 	return &engine{
 		st:    statements.New(),
 		buf:   list.New(),
-		trace: true,
+		trace: false,
 	}
+}
+
+func (eng *engine) EnableTrace(enable bool) {
+	eng.trace = enable
 }
 
 func (eng *engine) bufProc() {
