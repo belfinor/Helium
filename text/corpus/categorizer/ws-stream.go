@@ -114,6 +114,11 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 				return
 			}
 
+			if ws1.HasType(types.TP_SKIP) {
+				buf.Remove(first)
+				return
+			}
+
 			second := first.Next()
 			ws2 := tools.WsFromList(second)
 			if ws2 == nil {
@@ -298,6 +303,25 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
 					for _, w := range ws2.Words {
 						if w.Base == "год" || w.Base == "годы" {
+							wr := words.Join(0, ws1.Words[0], w)
+
+							wr.AddType(types.TP_HDATE)
+							wr.AddTag(tags.ToCode("история"))
+
+							wsr := &index.Record{
+								Name:  ws1.Name + " " + ws2.Name,
+								Words: []*words.Word{wr},
+							}
+
+							output <- wsr
+							buf.Remove(buf.Front())
+							buf.Remove(buf.Front())
+							return
+						}
+					}
+				} else if v > 0 && v < 21 {
+					for _, w := range ws2.Words {
+						if w.Base == "век" {
 							wr := words.Join(0, ws1.Words[0], w)
 
 							wr.AddType(types.TP_HDATE)
