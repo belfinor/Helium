@@ -1,8 +1,8 @@
 package index
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.003
-// @date    2018-12-11
+// @version 1.004
+// @date    2018-12-14
 
 import (
 	"github.com/belfinor/Helium/text/corpus/words"
@@ -13,8 +13,9 @@ type Word = words.Word
 
 // corpus index value
 type Record struct {
-	Name  string
-	Words []*Word
+	Name     string
+	Words    []*Word
+	TypeMask int64
 }
 
 // check has word with oopts
@@ -33,6 +34,16 @@ func (r *Record) WordByOpt(o int64) *Word {
 
 	for _, w := range r.Words {
 		if w.HasOpt(o) {
+			return w
+		}
+	}
+
+	return nil
+}
+
+func (r *Record) WordByMask(m int64) *Word {
+	for _, w := range r.Words {
+		if w.TypeMask()&m == m {
 			return w
 		}
 	}

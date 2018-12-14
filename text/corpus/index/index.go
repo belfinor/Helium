@@ -1,8 +1,8 @@
 package index
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.003
-// @date    2018-12-12
+// @version 1.004
+// @date    2018-12-14
 
 import (
 	"bufio"
@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/belfinor/Helium/log"
+	"github.com/belfinor/Helium/text/corpus/types"
 	"github.com/belfinor/Helium/text/corpus/words"
 	"github.com/belfinor/Helium/time/timer"
 )
@@ -55,8 +56,9 @@ func load(rh io.Reader) {
 		rec, has := result[f]
 		if has {
 			rec.Words = append(rec.Words, w)
+			rec.TypeMask |= w.TypeMask()
 		} else {
-			result[f] = &Record{Name: f, Words: []*Word{w}}
+			result[f] = &Record{Name: f, Words: []*Word{w}, TypeMask: w.TypeMask()}
 		}
 
 	}
@@ -95,8 +97,9 @@ func Get(f string) *Record {
 	if err == nil {
 
 		return &Record{
-			Name:  f,
-			Words: []*Word{words.MakeNum(f)},
+			Name:     f,
+			Words:    []*Word{words.MakeNum(f)},
+			TypeMask: types.MTP_NUMBER,
 		}
 
 	}

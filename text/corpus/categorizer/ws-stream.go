@@ -96,7 +96,7 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
 			if res != nil && level > 1 {
 
-				if !res.HasType(types.TP_SKIP) {
+				if res.TypeMask&types.MTP_SKIP == 0 {
 					output <- res
 				}
 
@@ -114,7 +114,7 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 				return
 			}
 
-			if ws1.HasType(types.TP_SKIP) {
+			if ws1.TypeMask&types.MTP_SKIP != 0 {
 				buf.Remove(first)
 				return
 			}
@@ -127,10 +127,10 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 				return
 			}
 
-			if ws1.HasType(types.TP_NAME) {
+			if ws1.TypeMask&types.MTP_NAME != 0 {
 
 				// иван иванов
-				if ws2.HasType(types.TP_LASTNAME) {
+				if ws2.TypeMask&types.MTP_LASTNAME != 0 {
 
 					for _, t := range wsAgreed {
 						w1 := ws1.WordByOpt(t)
@@ -142,8 +142,9 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 								wr.AddType(types.TP_MAN)
 
 								wsr := &index.Record{
-									Name:  ws1.Name + " " + ws2.Name,
-									Words: []*words.Word{wr},
+									Name:     ws1.Name + " " + ws2.Name,
+									Words:    []*words.Word{wr},
+									TypeMask: wr.TypeMask(),
 								}
 
 								output <- wsr
@@ -156,11 +157,11 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 				}
 
 				// иван иванович
-				if ws2.HasType(types.TP_PATRONYMIC) {
+				if ws2.TypeMask&types.MTP_PATRONYMIC != 0 {
 
 					// try иван иванович иванов
 					ws3 := tools.WsFromList(second.Next())
-					if ws3 != nil && ws3.HasType(types.TP_LASTNAME) {
+					if ws3 != nil && ws3.TypeMask&types.MTP_LASTNAME != 0 {
 
 						for _, t := range wsAgreed {
 							w1 := ws1.WordByOpt(t)
@@ -172,8 +173,9 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 										wr.AddType(types.TP_MAN)
 
 										wsr := &index.Record{
-											Name:  ws1.Name + " " + ws2.Name + " " + ws3.Name,
-											Words: []*words.Word{wr},
+											Name:     ws1.Name + " " + ws2.Name + " " + ws3.Name,
+											Words:    []*words.Word{wr},
+											TypeMask: wr.TypeMask(),
 										}
 
 										output <- wsr
@@ -198,8 +200,9 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 								wr.AddType(types.TP_MAN)
 
 								wsr := &index.Record{
-									Name:  ws1.Name + " " + ws2.Name,
-									Words: []*words.Word{wr},
+									Name:     ws1.Name + " " + ws2.Name,
+									Words:    []*words.Word{wr},
+									TypeMask: wr.TypeMask(),
 								}
 
 								output <- wsr
@@ -212,9 +215,9 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 				}
 
 				// петр i
-				if ws2.HasType(types.TP_ROMAN) {
+				if ws2.TypeMask&types.MTP_ROMAN != 0 {
 
-					w1 := ws1.WordByType(types.TP_NAME)
+					w1 := ws1.WordByMask(types.MTP_NAME)
 
 					wr := words.Join(w1.GetOpt(), w1, ws2.Words[0])
 
@@ -222,8 +225,9 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 					wr.AddType(types.TP_HPERSON)
 
 					wsr := &index.Record{
-						Name:  ws1.Name + " " + ws2.Name,
-						Words: []*words.Word{wr},
+						Name:     ws1.Name + " " + ws2.Name,
+						Words:    []*words.Word{wr},
+						TypeMask: wr.TypeMask(),
 					}
 
 					output <- wsr
@@ -234,14 +238,14 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
 			}
 
-			if ws1.HasType(types.TP_LASTNAME) {
+			if ws1.TypeMask&types.MTP_LASTNAME != 0 {
 
 				// иванов иван -> иван иванов
-				if ws2.HasType(types.TP_NAME) {
+				if ws2.TypeMask&types.MTP_NAME != 0 {
 
 					// try иванов иван иванович -> иван иванович иванов
 					ws3 := tools.WsFromList(second.Next())
-					if ws3 != nil && ws3.HasType(types.TP_PATRONYMIC) {
+					if ws3 != nil && ws3.TypeMask&types.MTP_PATRONYMIC != 0 {
 
 						for _, t := range wsAgreed {
 							w1 := ws1.WordByOpt(t)
@@ -253,8 +257,9 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 										wr.AddType(types.TP_MAN)
 
 										wsr := &index.Record{
-											Name:  ws2.Name + " " + ws3.Name + " " + ws1.Name,
-											Words: []*words.Word{wr},
+											Name:     ws2.Name + " " + ws3.Name + " " + ws1.Name,
+											Words:    []*words.Word{wr},
+											TypeMask: wr.TypeMask(),
 										}
 
 										output <- wsr
@@ -279,8 +284,9 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 								wr.AddType(types.TP_MAN)
 
 								wsr := &index.Record{
-									Name:  ws2.Name + " " + ws1.Name,
-									Words: []*words.Word{wr},
+									Name:     ws2.Name + " " + ws1.Name,
+									Words:    []*words.Word{wr},
+									TypeMask: wr.TypeMask(),
 								}
 
 								output <- wsr
@@ -295,53 +301,53 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
 			}
 
-			if ws1.HasType(types.TP_NUMBER) {
+			if ws1.TypeMask&types.MTP_NUMBER != 0 {
 
 				v, _ := strconv.Atoi(ws1.Name)
 
 				if v > 300 && v < 2000 {
 
-					for _, w := range ws2.Words {
-						if w.Base == "год" || w.Base == "годы" {
-							wr := words.Join(0, ws1.Words[0], w)
+					if ws2.TypeMask&types.MTP_YEAR != 0 {
+						wr := words.Join(0, ws1.Words[0], ws2.Words[0])
 
-							wr.AddType(types.TP_HDATE)
-							wr.AddTag(tags.ToCode("история"))
+						wr.AddType(types.TP_HDATE)
+						wr.AddTag(tags.ToCode("история"))
 
-							wsr := &index.Record{
-								Name:  ws1.Name + " " + ws2.Name,
-								Words: []*words.Word{wr},
-							}
-
-							output <- wsr
-							buf.Remove(buf.Front())
-							buf.Remove(buf.Front())
-							return
+						wsr := &index.Record{
+							Name:     ws1.Name + " " + ws2.Name,
+							Words:    []*words.Word{wr},
+							TypeMask: wr.TypeMask(),
 						}
+
+						output <- wsr
+						buf.Remove(buf.Front())
+						buf.Remove(buf.Front())
+						return
 					}
+
 				} else if v > 0 && v < 21 {
-					for _, w := range ws2.Words {
-						if w.Base == "век" {
-							wr := words.Join(0, ws1.Words[0], w)
 
-							wr.AddType(types.TP_HDATE)
-							wr.AddTag(tags.ToCode("история"))
+					if ws2.TypeMask&types.MTP_CENTURY != 0 {
+						wr := words.Join(0, ws1.Words[0], ws2.Words[0])
 
-							wsr := &index.Record{
-								Name:  ws1.Name + " " + ws2.Name,
-								Words: []*words.Word{wr},
-							}
+						wr.AddType(types.TP_HDATE)
+						wr.AddTag(tags.ToCode("история"))
 
-							output <- wsr
-							buf.Remove(buf.Front())
-							buf.Remove(buf.Front())
-							return
+						wsr := &index.Record{
+							Name:     ws1.Name + " " + ws2.Name,
+							Words:    []*words.Word{wr},
+							TypeMask: wr.TypeMask(),
 						}
+
+						output <- wsr
+						buf.Remove(buf.Front())
+						buf.Remove(buf.Front())
+						return
 					}
 				}
 			}
 
-			if ws1.HasType(types.TP_ROMAN) {
+			if ws1.TypeMask&types.MTP_ROMAN != 0 {
 
 				for _, w := range ws2.Words {
 					if w.Base == "век" {
@@ -351,8 +357,9 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 						wr.AddTag(tags.ToCode("история"))
 
 						wsr := &index.Record{
-							Name:  ws1.Name + " " + ws2.Name,
-							Words: []*words.Word{wr},
+							Name:     ws1.Name + " " + ws2.Name,
+							Words:    []*words.Word{wr},
+							TypeMask: wr.TypeMask(),
 						}
 
 						output <- wsr
@@ -375,13 +382,7 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 				output <- dot
 				return
 			}
-			/*
-				if first == text.WS_COMMA {
-					buf.Remove(buf.Front())
-					output <- comma
-					return
-				}
-			*/
+
 			tryAgg()
 
 		}

@@ -30,6 +30,44 @@ var TP_PATRONYMIC uint16
 var TP_ROMAN uint16
 var TP_SKIP uint16
 var TP_SLANG uint16
+var TP_DOT uint16
+var TP_COMMA uint16
+var TP_YEAR uint16
+var TP_CENTURY uint16
+
+const (
+	MTP_HDATE      int64 = 0x0001
+	MTP_HPERSON    int64 = 0x0002
+	MTP_LASTNAME   int64 = 0x0004
+	MTP_MAN        int64 = 0x0008
+	MTP_NAME       int64 = 0x0010
+	MTP_NUMBER     int64 = 0x0020
+	MTP_PATRONYMIC int64 = 0x0040
+	MTP_ROMAN      int64 = 0x0080
+	MTP_SKIP       int64 = 0x0100
+	MTP_SLANG      int64 = 0x0200
+	MTP_DOT        int64 = 0x0400
+	MTP_COMMA      int64 = 0x0800
+	MTP_CENTURY    int64 = 0x1000
+	MTP_YEAR       int64 = 0x2000
+)
+
+var masks map[string]int64 = map[string]int64{
+	"имя":        MTP_NAME,
+	"истдата":    MTP_HDATE,
+	"истлицо":    MTP_HPERSON,
+	"мат":        MTP_SLANG,
+	"отчество":   MTP_PATRONYMIC,
+	"римскцифра": MTP_ROMAN,
+	"фамилия":    MTP_LASTNAME,
+	"человек":    MTP_MAN,
+	"число":      MTP_NUMBER,
+	".":          MTP_DOT,
+	",":          MTP_COMMA,
+	"skip":       MTP_SKIP,
+	"век":        MTP_CENTURY,
+	"год":        MTP_YEAR,
+}
 
 func init() {
 
@@ -98,7 +136,8 @@ func load(rh io.Reader) {
 		appender(str)
 	}
 
-	for _, t := range []string{"имя", "истдата", "истлицо", "мат", "отчество", "римскцифра", "фамилия", "человек", "число", ".", ",", "skip"} {
+	for _, t := range []string{"имя", "истдата", "истлицо", "мат", "отчество", "римскцифра", "фамилия", "человек", "число", ".",
+		",", "skip", "год", "век"} {
 		appender(t)
 	}
 
@@ -114,11 +153,19 @@ func load(rh io.Reader) {
 	TP_PATRONYMIC = toCode["отчество"]
 	TP_ROMAN = toCode["римскцифра"]
 	TP_SLANG = toCode["мат"]
-	TP_HDATE = toCode["истдата"]
 	TP_SKIP = toCode["skip"]
+	TP_DOT = toCode["."]
+	TP_COMMA = toCode[","]
+	TP_YEAR = toCode["год"]
+	TP_CENTURY = toCode["век"]
 
 	log.Info(fmt.Sprintf("corpus types reloaded %.4fs", tm.DeltaFloat()))
 	log.Info(fmt.Sprintf("corpus types size = %d", Total()))
+}
+
+// to mask
+func ToMask(t string) int64 {
+	return masks[t]
 }
 
 func ToCode(str string) uint16 {

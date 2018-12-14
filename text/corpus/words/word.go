@@ -1,8 +1,8 @@
 package words
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.004
-// @date    2018-12-12
+// @version 1.005
+// @date    2018-12-14
 
 import (
 	"strings"
@@ -14,10 +14,11 @@ import (
 )
 
 type Word struct {
-	Base  string
-	opt   int64
-	types int64
-	tags  int64
+	Base     string
+	opt      int64
+	types    int64
+	tags     int64
+	typemask int64
 }
 
 type FOREACH_UINT16_FUNC func(uint16)
@@ -48,7 +49,9 @@ func Parse(str string, fn FORM_CALLBACK) *Word {
 		if len(v) > 1 {
 
 			if v[0] == '%' {
-				w.types = types.Append(w.types, types.ToCode(v[1:]))
+				name := v[1:]
+				w.types = types.Append(w.types, types.ToCode(name))
+				w.typemask = w.typemask | types.ToMask(name)
 				continue
 			}
 
@@ -58,24 +61,28 @@ func Parse(str string, fn FORM_CALLBACK) *Word {
 			}
 		}
 
-		if has[v] {
-			continue
-		}
-
 		has[v] = true
+	}
 
+	for v := range has {
 		fn(v, w)
 	}
 
 	return w
 }
 
+// get type mask
+func (w *Word) TypeMask() int64 {
+	return w.typemask
+}
+
 // make word for number
 func MakeNum(str string) *Word {
 	return &Word{
-		Base:  str,
-		opt:   opts.OPT_NUM,
-		types: int64(types.TP_NUMBER),
+		Base:     str,
+		opt:      opts.OPT_NUM,
+		types:    int64(types.TP_NUMBER),
+		typemask: types.MTP_NUMBER,
 	}
 }
 
@@ -110,6 +117,7 @@ func (w *Word) HasType(code uint16) bool {
 func (w *Word) AddType(code uint16) {
 
 	w.types = types.Append(w.types, code)
+	w.typemask = w.typemask | types.ToMask(types.FromCode(code))
 }
 
 func (w *Word) ForEachTypes(fn FOREACH_UINT16_FUNC) {
