@@ -1,8 +1,8 @@
 package types
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-12-12
+// @version 1.001
+// @date    2018-12-14
 
 import (
 	"testing"
@@ -39,7 +39,7 @@ func TestTypes(t *testing.T) {
 		t.Fatal("Append not work")
 	}
 
-	if Total() != 12 {
+	if Total() != 13 {
 		t.Fatal("Total not work")
 	}
 

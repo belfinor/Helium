@@ -1,14 +1,13 @@
 package categorizer
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-12-12
+// @version 1.002
+// @date    2018-12-14
 
 import (
 	"container/list"
 	"strconv"
 
-	"github.com/belfinor/Helium/text"
 	"github.com/belfinor/Helium/text/corpus/index"
 	"github.com/belfinor/Helium/text/corpus/opts"
 	"github.com/belfinor/Helium/text/corpus/tags"
@@ -19,7 +18,7 @@ import (
 
 func tryFind(pref string, e *list.Element, level int) (*index.Record, int) {
 
-	if level > 3 || e == nil {
+	if level > 4 || e == nil {
 		return nil, 0
 	}
 
@@ -85,9 +84,8 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 	go func() {
 
 		dot := &index.Record{Words: []*index.Word{words.Parse("eos . %.", func(f string, w *index.Word) {})}, Name: "."}
-		comma := &index.Record{Words: []*index.Word{words.Parse("sep "+text.WS_COMMA+" %,", func(f string, w *index.Word) {})}, Name: ","}
 
-		bufSize := 3
+		bufSize := 4
 		buf := list.New()
 
 		tryAgg := func() {
@@ -95,8 +93,13 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 			first := buf.Front()
 
 			res, level := tryFind("", first, 1)
+
 			if res != nil && level > 1 {
-				output <- res
+
+				if !res.HasType(types.TP_SKIP) {
+					output <- res
+				}
+
 				for level > 0 {
 					buf.Remove(buf.Front())
 					level--
@@ -348,13 +351,13 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 				output <- dot
 				return
 			}
-
-			if first == text.WS_COMMA {
-				buf.Remove(buf.Front())
-				output <- comma
-				return
-			}
-
+			/*
+				if first == text.WS_COMMA {
+					buf.Remove(buf.Front())
+					output <- comma
+					return
+				}
+			*/
 			tryAgg()
 
 		}

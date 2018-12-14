@@ -23,7 +23,7 @@ const (
 	ST_NUM   int = 1
 	ST_ALPHA int = 2
 
-	WS_COMMA string = ":comma:"
+	WS_COMMA string = ","
 )
 
 type wsOpts struct {

@@ -1,8 +1,8 @@
 package types
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.004
-// @date    2018-12-12
+// @version 1.005
+// @date    2018-12-14
 
 import (
 	"bufio"
@@ -28,6 +28,7 @@ var TP_NAME uint16
 var TP_NUMBER uint16
 var TP_PATRONYMIC uint16
 var TP_ROMAN uint16
+var TP_SKIP uint16
 var TP_SLANG uint16
 
 func init() {
@@ -97,7 +98,7 @@ func load(rh io.Reader) {
 		appender(str)
 	}
 
-	for _, t := range []string{"имя", "истдата", "истлицо", "мат", "отчество", "римскцифра", "фамилия", "человек", "число", ".", ","} {
+	for _, t := range []string{"имя", "истдата", "истлицо", "мат", "отчество", "римскцифра", "фамилия", "человек", "число", ".", ",", "skip"} {
 		appender(t)
 	}
 
@@ -114,6 +115,7 @@ func load(rh io.Reader) {
 	TP_ROMAN = toCode["римскцифра"]
 	TP_SLANG = toCode["мат"]
 	TP_HDATE = toCode["истдата"]
+	TP_SKIP = toCode["skip"]
 
 	log.Info(fmt.Sprintf("corpus types reloaded %.4fs", tm.DeltaFloat()))
 	log.Info(fmt.Sprintf("corpus types size = %d", Total()))
