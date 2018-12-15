@@ -1,8 +1,8 @@
 package schemas
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.001
-// @date    2018-12-12
+// @version 1.003
+// @date    2018-12-15
 
 import (
 	"container/list"
@@ -16,7 +16,123 @@ import (
 
 var tab map[int64][]uint16 = map[int64][]uint16{}
 
+func fetchNext(e *list.Element) (*index.Record, *list.Element) {
+	e = e.Next()
+	if e == nil {
+		return nil, nil
+	}
+
+	ws := e.Value.(*index.Record)
+	return ws, e
+}
+
+func killN(l *list.List, n int) {
+
+	for n > 0 {
+		l.Remove(l.Front())
+		n--
+	}
+}
+
+func cleanHow(buf *list.List) int {
+
+	cnt := 0
+
+	e := buf.Front()
+	if e == nil {
+		return 0
+	}
+
+	ws := e.Value.(*index.Record)
+	if ws == nil {
+		return 0
+	}
+
+	if ws.TypeMask&types.MTP_COMMA == 0 {
+		return 0
+	}
+
+	cnt++
+
+	ws, e = fetchNext(e)
+	if ws == nil {
+		return 0
+	}
+
+	if ws.TypeMask&types.MTP_HOW == 0 {
+		return 0
+	}
+
+	cnt++
+
+	state := 0
+
+	for {
+		ws, e = fetchNext(e)
+		if ws == nil {
+			break
+		}
+
+		fmt.Println("PRE: " + ws.Name)
+
+		switch state {
+		case 0:
+
+			if ws.HasOpt(opts.OPT_NOUN) || ws.HasOpt(opts.OPT_ADJ) {
+				state = 1
+				cnt++
+			} else if ws.HasOpt(opts.OPT_PRETEXT) {
+				state = 3
+				cnt++
+			} else {
+				return 0
+			}
+
+		case 1:
+
+			if ws.TypeMask&types.MTP_DOT != 0 {
+				cnt++
+				killN(buf, cnt)
+				return cnt
+			}
+
+			if ws.HasOpt(opts.OPT_NOUN) {
+				cnt++
+				state = 2
+			} else {
+				return 0
+			}
+
+		case 2:
+
+			if ws.TypeMask&types.MTP_DOT != 0 {
+				cnt++
+				killN(buf, cnt)
+				return cnt
+			}
+
+			return 0
+
+		case 3:
+
+			if ws.HasOpt(opts.OPT_NOUN) || ws.HasOpt(opts.OPT_ADJ) {
+				state = 1
+				cnt++
+			} else {
+				return 0
+			}
+		}
+	}
+
+	return 0
+}
+
 func Proc(buf *list.List, st *statements.Statements, trace bool) int {
+
+	res := cleanHow(buf)
+	if res > 0 {
+		return res
+	}
 
 	i := 0
 	j := 0

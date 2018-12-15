@@ -83,7 +83,11 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
 	go func() {
 
-		dot := &index.Record{Words: []*index.Word{words.Parse("eos . %.", func(f string, w *index.Word) {})}, Name: "."}
+		dot := &index.Record{
+			Words:    []*index.Word{words.Parse("eos . %.", func(f string, w *index.Word) {})},
+			Name:     ".",
+			TypeMask: types.MTP_DOT,
+		}
 
 		bufSize := 4
 		buf := list.New()

@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.009
-// @date    2018-12-12
+// @version 1.010
+// @date    2018-12-15
 
 import (
 	"io"
@@ -39,7 +39,7 @@ func isEndStatement(run rune) bool {
 }
 
 func isCommaStyle(run rune) bool {
-	return run == ',' || run == ':' || run == '"' || run == '«' || run == '»'
+	return run == ',' || run == ':' // || run == '"' || run == '«' || run == '»'
 }
 
 func WordStream(rdr io.RuneReader, opts ...int) <-chan string {

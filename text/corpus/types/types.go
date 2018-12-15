@@ -34,6 +34,7 @@ var TP_DOT uint16
 var TP_COMMA uint16
 var TP_YEAR uint16
 var TP_CENTURY uint16
+var TP_HOW uint16
 
 const (
 	MTP_HDATE      int64 = 0x0001
@@ -50,6 +51,7 @@ const (
 	MTP_COMMA      int64 = 0x0800
 	MTP_CENTURY    int64 = 0x1000
 	MTP_YEAR       int64 = 0x2000
+	MTP_HOW        int64 = 0x4000
 )
 
 var masks map[string]int64 = map[string]int64{
@@ -67,6 +69,7 @@ var masks map[string]int64 = map[string]int64{
 	"skip":       MTP_SKIP,
 	"век":        MTP_CENTURY,
 	"год":        MTP_YEAR,
+	"как":        MTP_HOW,
 }
 
 func init() {
@@ -137,7 +140,7 @@ func load(rh io.Reader) {
 	}
 
 	for _, t := range []string{"имя", "истдата", "истлицо", "мат", "отчество", "римскцифра", "фамилия", "человек", "число", ".",
-		",", "skip", "год", "век"} {
+		",", "skip", "год", "век", "как"} {
 		appender(t)
 	}
 
@@ -158,6 +161,7 @@ func load(rh io.Reader) {
 	TP_COMMA = toCode[","]
 	TP_YEAR = toCode["год"]
 	TP_CENTURY = toCode["век"]
+	TP_HOW = toCode["как"]
 
 	log.Info(fmt.Sprintf("corpus types reloaded %.4fs", tm.DeltaFloat()))
 	log.Info(fmt.Sprintf("corpus types size = %d", Total()))
