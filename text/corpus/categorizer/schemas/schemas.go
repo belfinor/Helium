@@ -73,8 +73,6 @@ func cleanHow(buf *list.List) int {
 			break
 		}
 
-		fmt.Println("PRE: " + ws.Name)
-
 		switch state {
 		case 0:
 
