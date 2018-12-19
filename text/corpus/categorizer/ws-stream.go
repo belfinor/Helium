@@ -77,6 +77,13 @@ func tryFind(pref string, e *list.Element, level int) (*index.Record, int) {
 
 var wsAgreed []int64 = []int64{opts.OPT_MR, opts.OPT_GR, opts.OPT_EN}
 
+var wsPrefix map[string][]string = map[string][]string{
+	"ai": []string{"технологии"},
+	"ar": []string{"технологии", "техника"},
+	"vr": []string{"технологии", "техника"},
+	"ии": []string{"технологии"},
+}
+
 // original word stream with agg words to phrases
 func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
@@ -119,31 +126,15 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
 					lst := strings.Split(first.Value.(string), "-")
 
-					mode := 0
-
-					switch lst[0] {
-					case "ai":
-						mode = 1
-					case "ar":
-						mode = 2
-					case "vr":
-						mode = 2
-					case "ии":
-						mode = 1
-					}
-
-					if mode == 0 {
-						output <- nil
-					} else {
+					if tgs, has := wsPrefix[lst[0]]; has {
 						w := &words.Word{
 							Base: first.Value.(string),
 						}
 
 						w.SetOpt(opts.OPT_NOUN)
-						w.AddTag(tags.ToCode("технологии"))
 
-						if mode == 2 {
-							w.AddTag(tags.ToCode("техника"))
+						for _, tg := range tgs {
+							w.AddTag(tags.ToCode(tg))
 						}
 
 						ws1 = &index.Record{
@@ -152,6 +143,8 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 						}
 
 						output <- ws1
+					} else {
+						output <- nil
 					}
 
 				} else {
