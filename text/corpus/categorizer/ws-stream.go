@@ -7,6 +7,7 @@ package categorizer
 import (
 	"container/list"
 	"strconv"
+	"strings"
 
 	"github.com/belfinor/Helium/text/corpus/index"
 	"github.com/belfinor/Helium/text/corpus/opts"
@@ -113,7 +114,50 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
 			ws1 := tools.WsFromList(first)
 			if ws1 == nil {
-				output <- nil
+
+				if first != nil {
+
+					lst := strings.Split(first.Value.(string), "-")
+
+					mode := 0
+
+					switch lst[0] {
+					case "ai":
+						mode = 1
+					case "ar":
+						mode = 2
+					case "vr":
+						mode = 2
+					case "ии":
+						mode = 1
+					}
+
+					if mode == 0 {
+						output <- nil
+					} else {
+						w := &words.Word{
+							Base: first.Value.(string),
+						}
+
+						w.SetOpt(opts.OPT_NOUN)
+						w.AddTag(tags.ToCode("технологии"))
+
+						if mode == 2 {
+							w.AddTag(tags.ToCode("техника"))
+						}
+
+						ws1 = &index.Record{
+							Name:  first.Value.(string),
+							Words: []*words.Word{w},
+						}
+
+						output <- ws1
+					}
+
+				} else {
+					output <- nil
+				}
+
 				buf.Remove(first)
 				return
 			}
