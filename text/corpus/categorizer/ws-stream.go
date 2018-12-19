@@ -11,6 +11,7 @@ import (
 
 	"github.com/belfinor/Helium/text/corpus/index"
 	"github.com/belfinor/Helium/text/corpus/opts"
+	"github.com/belfinor/Helium/text/corpus/prefix"
 	"github.com/belfinor/Helium/text/corpus/tags"
 	"github.com/belfinor/Helium/text/corpus/tools"
 	"github.com/belfinor/Helium/text/corpus/types"
@@ -77,13 +78,6 @@ func tryFind(pref string, e *list.Element, level int) (*index.Record, int) {
 
 var wsAgreed []int64 = []int64{opts.OPT_MR, opts.OPT_GR, opts.OPT_EN}
 
-var wsPrefix map[string][]string = map[string][]string{
-	"ai": []string{"технологии"},
-	"ar": []string{"технологии", "техника"},
-	"vr": []string{"технологии", "техника"},
-	"ии": []string{"технологии"},
-}
-
 // original word stream with agg words to phrases
 func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
@@ -126,23 +120,31 @@ func wsStream(input <-chan string, slang *int) <-chan *index.Record {
 
 					lst := strings.Split(first.Value.(string), "-")
 
-					if tgs, has := wsPrefix[lst[0]]; has {
-						w := &words.Word{
-							Base: first.Value.(string),
+					if len(lst) > 1 {
+
+						tgs := prefix.Get(lst[0])
+
+						if len(tgs) > 0 {
+							w := &words.Word{
+								Base: first.Value.(string),
+							}
+
+							w.SetOpt(opts.OPT_NOUN)
+
+							for _, tg := range tgs {
+								w.AddTag(tags.ToCode(tg))
+							}
+
+							ws1 = &index.Record{
+								Name:  first.Value.(string),
+								Words: []*words.Word{w},
+							}
+
+							output <- ws1
+						} else {
+							output <- nil
 						}
 
-						w.SetOpt(opts.OPT_NOUN)
-
-						for _, tg := range tgs {
-							w.AddTag(tags.ToCode(tg))
-						}
-
-						ws1 = &index.Record{
-							Name:  first.Value.(string),
-							Words: []*words.Word{w},
-						}
-
-						output <- ws1
 					} else {
 						output <- nil
 					}
