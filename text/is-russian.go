@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.000
-// @date    2018-07-09
+// @version 1.001
+// @date    2019-01-22
 
 var ruMap map[rune]bool
 var enMap map[rune]bool
@@ -25,6 +25,7 @@ func IsRussian(str string) bool {
 
 	cntRu := 0
 	cntEn := 0
+	cntByUA := 0
 
 	for _, s := range str {
 		if _, h := ruMap[s]; h {
@@ -32,6 +33,14 @@ func IsRussian(str string) bool {
 		} else if _, h := enMap[s]; h {
 			cntEn++
 		}
+
+		if s == 'і' || s == 'ў' {
+			cntByUA++
+		}
+	}
+
+	if cntByUA > 3 {
+		return false
 	}
 
 	return cntRu >= cntEn
