@@ -1,8 +1,8 @@
 package stemmer
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.004
-// @date    2018-10-08
+// @version 1.005
+// @date    2019-01-23
 
 import (
 	"bufio"
@@ -28,7 +28,7 @@ func Word(word string) string {
 		return wf
 	}
 
-	if word == "." {
+	if word == "." || word == "," {
 		return word
 	}
 

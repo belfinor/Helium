@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.010
-// @date    2018-12-15
+// @version 1.011
+// @date    2019-01-23
 
 import (
 	"io"
@@ -109,6 +109,8 @@ func WordStream(rdr io.RuneReader, opts ...int) <-chan string {
 						waitDot = false
 						output <- "."
 					}
+				} else if opt.ends && isCommaStyle(run) {
+					output <- WS_COMMA
 				}
 
 			case 1:
