@@ -1,5 +1,7 @@
 package text
 
+import "unicode"
+
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
 // @version 1.002
 // @date    2019-01-29
@@ -23,7 +25,7 @@ func init() {
 	}
 
 	for _, r := range "іўაბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ" {
-		otherMap[r] = true
+		otherMap[unicode.ToLower(r)] = true
 	}
 }
 
