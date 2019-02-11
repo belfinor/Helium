@@ -34,16 +34,25 @@ func IsRussian(str string) bool {
 	cntRu := 0
 	cntEn := 0
 	cntByOther := 0
+	cntSim := 0
 
 	for _, s := range str {
 		if _, h := ruMap[s]; h {
 			cntRu++
-		} else if _, h := enMap[s]; h {
+			continue
+		}
+
+		if _, h := enMap[s]; h {
 			cntEn++
+			continue
 		}
 
 		if _, h := otherMap[s]; h {
 			cntByOther++
+		}
+
+		if unicode.IsLetter(s) {
+			cntSim++
 		}
 	}
 
@@ -51,5 +60,5 @@ func IsRussian(str string) bool {
 		return false
 	}
 
-	return cntRu >= cntEn
+	return cntRu >= cntEn && cntRu > cntSim
 }
