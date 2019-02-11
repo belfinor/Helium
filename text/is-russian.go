@@ -60,5 +60,5 @@ func IsRussian(str string) bool {
 		return false
 	}
 
-	return cntRu >= cntEn && cntRu > cntSim
+	return cntRu >= cntEn && cntRu > cntSim*2
 }
