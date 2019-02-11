@@ -56,7 +56,7 @@ func IsRussian(str string) bool {
 		}
 	}
 
-	if cntByOther > 5 {
+	if cntByOther > 6 {
 		return false
 	}
 
