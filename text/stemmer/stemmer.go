@@ -1,8 +1,8 @@
 package stemmer
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.005
-// @date    2019-01-23
+// @version 1.006
+// @date    2019-02-11
 
 import (
 	"bufio"
@@ -111,7 +111,7 @@ func LoadStopWords(filename string) {
 
 	for {
 		str, err := reader.ReadString('\n')
-		if err != nil {
+		if err != nil && str == "" {
 			break
 		}
 
