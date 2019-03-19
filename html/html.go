@@ -1,18 +1,19 @@
 package html
 
-// @author  Mikhail Kirillov
-// @email   mikkirillov@yandex.ru
-// @version 1.000
-// @date    2017-05-22
+// @author  Mikhail Kirillov <mikkirillov@yandex.ru>
+// @version 1.002
+// @date    2019-03-13
 
 import (
 	"bytes"
-	ht "golang.org/x/net/html"
 	"io"
+
+	ht "golang.org/x/net/html"
 )
 
 type HTML struct {
 	Links      map[string]bool
+	Iframes    map[string]bool
 	TagErase   map[string]bool
 	TagStack   []string
 	EraseStack []string
@@ -24,6 +25,7 @@ func NewHtmlParser() *HTML {
 	res := &HTML{}
 
 	res.Links = make(map[string]bool)
+	res.Iframes = make(map[string]bool)
 
 	res.TagErase = map[string]bool{
 		"form":     true,
@@ -97,17 +99,38 @@ func (h *HTML) onStartTag(t *ht.Token, raw string) {
 		if t.Data != "meta" && t.Data != "link" {
 			h.EraseStack = append(h.EraseStack, t.Data)
 		}
+
+		if t.Data == "iframe" {
+			for _, a := range t.Attr {
+				if a.Key == "src" {
+					h.Iframes[a.Val] = true
+				}
+			}
+		}
+
 		return
 	}
 
 	h.TagStack = append(h.TagStack, t.Data)
 
-	if t.Data == "a" {
+	switch t.Data {
+
+	case "a":
+
 		for _, a := range t.Attr {
 			if a.Key == "href" {
 				h.Links[a.Val] = true
 			}
 		}
+
+	case "iframe":
+
+		for _, a := range t.Attr {
+			if a.Key == "src" {
+				h.Iframes[a.Val] = true
+			}
+		}
+
 	}
 
 	h.Document += raw
