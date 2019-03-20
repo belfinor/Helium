@@ -1,10 +1,10 @@
 package text
 
-import "unicode"
-
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2019-01-29
+// @version 1.003
+// @date    2019-03-20
+
+import "unicode"
 
 var ruMap map[rune]bool
 var enMap map[rune]bool
@@ -24,9 +24,21 @@ func init() {
 		enMap[r] = true
 	}
 
-	for _, r := range "іўაბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ" {
+	for _, r := range "іўაბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰәҙөғҫҡңһ" {
 		otherMap[unicode.ToLower(r)] = true
 	}
+}
+
+func OtherCyr(str string) bool {
+	cntByOther := 0
+
+	for _, s := range str {
+		if _, h := otherMap[s]; h {
+			cntByOther++
+		}
+	}
+
+	return cntByOther > 5
 }
 
 func IsRussian(str string) bool {
