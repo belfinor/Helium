@@ -1,8 +1,8 @@
 package router
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.004
-// @date    2018-10-12
+// @version 1.005
+// @date    2019-04-17
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	"github.com/belfinor/Helium/log"
 	"github.com/belfinor/Helium/net/http/errors"
 	"github.com/belfinor/Helium/net/jsonrpc2"
-	"github.com/belfinor/Helium/uniq"
+	"github.com/belfinor/luniq"
 )
 
 func init() {
@@ -293,7 +293,7 @@ func writeLog(f log.LoggerFunc, method string, url string) {
 	f(fmt.Sprintf("%s %s", method, url))
 }
 
-var UNIQS *uniq.Uniq = uniq.New()
+var UNIQS *luniq.Uniq = luniq.New()
 
 func makeUid(rw http.ResponseWriter, req *http.Request) {
 
