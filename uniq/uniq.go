@@ -1,8 +1,8 @@
 package uniq
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.003
-// @date    2018-07-11
+// @version 1.004
+// @date    2019-04-17
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/belfinor/Helium/math/num/fibo"
-	"github.com/belfinor/Helium/rand/mersenne"
+	"github.com/belfinor/lrand"
 )
 
 type Uniq struct {
@@ -39,7 +39,7 @@ func maker(ctx context.Context, stream chan string, prefix string) {
 	defer fb.Close()
 
 	//rnd := rand.New(rand.NewSource(time.Now().Unix()))
-	tact := mersenne.Next() & 0xffff
+	tact := lrand.Next() & 0xffff
 	crctab := crc32.MakeTable(crc32.IEEE)
 
 	calc := func() string {
@@ -47,7 +47,7 @@ func maker(ctx context.Context, stream chan string, prefix string) {
 		mod := ts.UnixNano() & 0xffff
 		epoch := ts.Unix()
 		fbv := fb.Next() & 0xffffffff
-		str := fmt.Sprintf("%s%016x%08x%04x%04x%08x", prefix, mersenne.Next(), epoch, tact, mod, fbv)
+		str := fmt.Sprintf("%s%016x%08x%04x%04x%08x", prefix, lrand.Next(), epoch, tact, mod, fbv)
 		tact = (tact + 1) & 0xffff
 		return fmt.Sprintf("%s%08x", str, crc32.Checksum([]byte(str), crctab))
 	}

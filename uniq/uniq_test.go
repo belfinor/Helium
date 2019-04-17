@@ -1,12 +1,12 @@
 package uniq
 
-import (
-	"testing"
-)
-
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
 // @version 1.000
 // @date    2018-07-02
+
+import (
+	"testing"
+)
 
 func TestUniq(t *testing.T) {
 
