@@ -13,9 +13,9 @@ func Encode(list ...interface{}) []byte {
 	b := new(bytes.Buffer)
 	for _, item := range list {
 
-		switch item.(type) {
+		switch v := item.(type) {
 		case string:
-			binary.Write(b, binary.BigEndian, []byte(item.(string)))
+			binary.Write(b, binary.BigEndian, []byte(v))
 		default:
 			binary.Write(b, binary.BigEndian, item)
 		}
