@@ -1,12 +1,12 @@
 package html
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2019-03-13
+// @version 1.003
+// @date    2019-04-18
 
 import (
-	"bytes"
 	"io"
+	"strings"
 
 	ht "golang.org/x/net/html"
 )
@@ -49,7 +49,7 @@ func NewHtmlParser() *HTML {
 }
 
 func (h *HTML) ProcessString(str string) string {
-	r := bytes.NewReader([]byte(str))
+	r := strings.NewReader(str)
 	return h.ProcessReader(r)
 }
 
