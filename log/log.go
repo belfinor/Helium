@@ -1,8 +1,8 @@
 package log
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.010
-// @date    2018-10-02
+// @version 1.011
+// @date    2019-04-18
 
 import (
 	"fmt"
@@ -32,11 +32,16 @@ type Log struct {
 	filename  string
 	lastCheck int64
 	eofC      chan bool
+	end       bool
 }
 
 func (l *Log) logger(level string, strs []interface{}) {
 
 	if l == nil {
+		return
+	}
+
+	if l.end {
 		return
 	}
 
@@ -121,7 +126,7 @@ func (l *Log) writer() {
 		case str := <-l.input:
 
 			if str == "eof" {
-				l.eofC <- true
+				close(l.eofC)
 				return
 			}
 
@@ -151,8 +156,10 @@ func (l *Log) writer() {
 
 func (l *Log) Close() {
 	if l != nil {
+		l.end = true
 		l.input <- "eof"
 		<-l.eofC
+		close(l.input)
 	}
 }
 
