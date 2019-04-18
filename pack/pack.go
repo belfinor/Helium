@@ -1,8 +1,8 @@
 package pack
 
 // @author  Mikhail Kirillov
-// @version 1.000
-// @date    2017-05-17
+// @version 1.001
+// @date    2019-04-18
 
 import (
 	"bytes"
@@ -12,7 +12,13 @@ import (
 func Encode(list ...interface{}) []byte {
 	b := new(bytes.Buffer)
 	for _, item := range list {
-		binary.Write(b, binary.BigEndian, item)
+
+		switch item.(type) {
+		case string:
+			binary.Write(b, binary.BigEndian, []byte(item.(string)))
+		default:
+			binary.Write(b, binary.BigEndian, item)
+		}
 	}
 	return b.Bytes()
 }
