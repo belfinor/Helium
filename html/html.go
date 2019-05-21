@@ -1,8 +1,8 @@
 package html
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.003
-// @date    2019-04-18
+// @version 1.004
+// @date    2019-05-21
 
 import (
 	"io"
@@ -17,6 +17,7 @@ type HTML struct {
 	TagErase   map[string]bool
 	TagStack   []string
 	EraseStack []string
+	AltExport  bool
 	Document   string
 	Text       string
 }
@@ -129,6 +130,29 @@ func (h *HTML) onStartTag(t *ht.Token, raw string) {
 			if a.Key == "src" {
 				h.Iframes[a.Val] = true
 			}
+		}
+
+	case "img":
+
+		if h.AltExport {
+
+			title := ""
+
+			for _, a := range t.Attr {
+
+				if a.Key == "title" || a.Key == "alt" {
+
+					if a.Val != "" {
+						if title != a.Val {
+							title = a.Val
+							h.Text += " . " + title + " .\n"
+						}
+						title = a.Val
+					}
+				}
+
+			}
+
 		}
 
 	}

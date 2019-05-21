@@ -15,11 +15,14 @@ func TestTextHtmlProcessString(t *testing.T) {
 		t.Fatal("NewHtmlParser() erro")
 	}
 
-	src := "<html><head><title>Привет мир</title><style>a{color:#CCC;}</style></head><body><h1>Hello</h1><script><!-- alert('hello') --></script><iframe src=\"xxx\"></iframe><a href='/url1'>url1</a><a href='/url2'>url2</a></body></html>"
+	h.AltExport = true
+
+	src := `<html><head><title>Привет мир</title><style>a{color:#CCC;}</style></head><body><h1>Hello</h1><script><!-- alert('hello')
+--></script><iframe src="xxx"></iframe><a href='/url1'>url1</a><a href='/url2'>url2</a><img src="" title="img title"/></body></html>`
 
 	res := h.ProcessString(src)
 
-	if res != " Привет мир Hello url1 url2" {
+	if res != " Привет мир Hello url1 url2 . img title .\n" {
 		t.Fatal("Wrong plain text")
 	}
 
