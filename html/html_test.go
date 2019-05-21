@@ -22,7 +22,7 @@ func TestTextHtmlProcessString(t *testing.T) {
 
 	res := h.ProcessString(src)
 
-	if res != " Привет мир Hello url1 url2 . img title .\n" {
+	if res != " Привет мир Hello url1 url2 .\nimg title .\n" {
 		t.Fatal("Wrong plain text")
 	}
 

@@ -12,14 +12,15 @@ import (
 )
 
 type HTML struct {
-	Links      map[string]bool
-	Iframes    map[string]bool
-	TagErase   map[string]bool
-	TagStack   []string
-	EraseStack []string
-	AltExport  bool
-	Document   string
-	Text       string
+	Links     map[string]bool
+	Iframes   map[string]bool
+	TagErase  map[string]bool
+	AltExport bool
+	Document  string
+	Text      string
+
+	tagStack   []string
+	eraseStack []string
 }
 
 func NewHtmlParser() *HTML {
@@ -40,8 +41,8 @@ func NewHtmlParser() *HTML {
 		"style":    true,
 	}
 
-	res.TagStack = make([]string, 0)
-	res.EraseStack = make([]string, 0)
+	res.tagStack = make([]string, 0)
+	res.eraseStack = make([]string, 0)
 
 	res.Document = ""
 	res.Text = ""
@@ -89,8 +90,8 @@ func (h *HTML) ProcessReader(r io.Reader) string {
 
 func (h *HTML) onStartTag(t *ht.Token, raw string) {
 
-	if len(h.EraseStack) > 0 {
-		h.EraseStack = append(h.EraseStack, t.Data)
+	if len(h.eraseStack) > 0 {
+		h.eraseStack = append(h.eraseStack, t.Data)
 		return
 	}
 
@@ -98,7 +99,7 @@ func (h *HTML) onStartTag(t *ht.Token, raw string) {
 
 	if found {
 		if t.Data != "meta" && t.Data != "link" {
-			h.EraseStack = append(h.EraseStack, t.Data)
+			h.eraseStack = append(h.eraseStack, t.Data)
 		}
 
 		if t.Data == "iframe" {
@@ -112,7 +113,7 @@ func (h *HTML) onStartTag(t *ht.Token, raw string) {
 		return
 	}
 
-	h.TagStack = append(h.TagStack, t.Data)
+	h.tagStack = append(h.tagStack, t.Data)
 
 	switch t.Data {
 
@@ -145,7 +146,7 @@ func (h *HTML) onStartTag(t *ht.Token, raw string) {
 					if a.Val != "" {
 						if title != a.Val {
 							title = a.Val
-							h.Text += " . " + title + " .\n"
+							h.Text += " .\n" + title + " .\n"
 						}
 						title = a.Val
 					}
@@ -162,37 +163,37 @@ func (h *HTML) onStartTag(t *ht.Token, raw string) {
 
 func (h *HTML) onCloseTag(t *ht.Token) {
 
-	elen := len(h.EraseStack)
+	elen := len(h.eraseStack)
 
 	if elen > 0 {
 
-		if h.EraseStack[elen-1] == t.Data {
-			h.EraseStack = h.EraseStack[0 : elen-1]
+		if h.eraseStack[elen-1] == t.Data {
+			h.eraseStack = h.eraseStack[0 : elen-1]
 			return
 		}
 
 		pos := -1
 
-		for i, cur := range h.EraseStack {
+		for i, cur := range h.eraseStack {
 			if cur == t.Data {
 				pos = i
 			}
 		}
 
 		if pos > -1 {
-			h.EraseStack = h.EraseStack[0:pos]
+			h.eraseStack = h.eraseStack[0:pos]
 		}
 
 		return
 	}
 
-	elen = len(h.TagStack)
+	elen = len(h.tagStack)
 
-	if len(h.TagStack) > 0 {
+	if len(h.tagStack) > 0 {
 
-		if h.TagStack[elen-1] == t.Data {
+		if h.tagStack[elen-1] == t.Data {
 			h.Document += "</" + t.Data + ">"
-			h.TagStack = h.TagStack[0 : elen-1]
+			h.tagStack = h.tagStack[0 : elen-1]
 			return
 		}
 
@@ -203,7 +204,7 @@ func (h *HTML) onCloseTag(t *ht.Token) {
 
 		pos := -1
 
-		for i, cur := range h.TagStack {
+		for i, cur := range h.tagStack {
 			if cur == t.Data {
 				pos = i
 			}
@@ -212,16 +213,16 @@ func (h *HTML) onCloseTag(t *ht.Token) {
 		if pos > -1 {
 
 			for i := elen - 1; i >= pos; i-- {
-				h.Document += "</" + h.TagStack[i] + ">"
+				h.Document += "</" + h.tagStack[i] + ">"
 			}
 
-			h.TagStack = h.TagStack[0:pos]
+			h.tagStack = h.tagStack[0:pos]
 		}
 	}
 }
 
 func (h *HTML) onText(str string, raw string) {
-	if len(h.EraseStack) == 0 {
+	if len(h.eraseStack) == 0 {
 		h.Document += raw
 		h.Text += " " + str
 	}
