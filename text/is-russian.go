@@ -1,8 +1,8 @@
 package text
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.003
-// @date    2019-03-20
+// @version 1.004
+// @date    2019-06-17
 
 import "unicode"
 
@@ -24,7 +24,7 @@ func init() {
 		enMap[r] = true
 	}
 
-	for _, r := range "іўაბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰәҙөғҫҡңһ" {
+	for _, r := range "іўაბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰәҙөғҫҡңһѣ" {
 		otherMap[unicode.ToLower(r)] = true
 	}
 }
