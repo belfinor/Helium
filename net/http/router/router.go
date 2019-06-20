@@ -1,8 +1,8 @@
 package router
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.005
-// @date    2019-04-17
+// @version 1.006
+// @date    2019-06-20
 
 import (
 	"fmt"
@@ -18,6 +18,9 @@ import (
 )
 
 func init() {
+
+	initTime = time.Now().Unix()
+
 	New(true)
 }
 
@@ -47,6 +50,9 @@ func New(isDefault bool) *Router {
 	if isDefault {
 		handler = rt
 	}
+
+	rt.Register("GET", "/alive", aliveHandler)
+	rt.Register("POST", "/alive", aliveHandler)
 
 	return rt
 }
@@ -318,4 +324,12 @@ func makeUid(rw http.ResponseWriter, req *http.Request) {
 	req.AddCookie(cookie)
 
 	http.SetCookie(rw, cookie)
+}
+
+func aliveHandler(rw http.ResponseWriter, req *http.Request, prms Params) {
+
+	rw.Header().Set("Content-Type", "application/json; charset=utf-8")
+	rw.WriteHeader(http.StatusOK)
+
+	fmt.Fprintf(rw, "{\"alive\":%d}", time.Now().Unix()-initTime)
 }

@@ -1,8 +1,8 @@
 package router
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.002
-// @date    2018-10-11
+// @version 1.003
+// @date    2019-06-20
 
 import (
 	"net/http"
@@ -10,7 +10,10 @@ import (
 	"github.com/belfinor/Helium/net/http/errors"
 )
 
-var handler *Router
+var (
+	handler  *Router
+	initTime int64
+)
 
 func SetDefault(rt *Router) {
 	handler = rt

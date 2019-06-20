@@ -5,9 +5,12 @@ package router
 // @date    2018-10-10
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestPath2List(t *testing.T) {
@@ -225,5 +228,27 @@ func TestRouter(t *testing.T) {
 	ServeHTTP(rw, req)
 	if rw.Result().StatusCode != 302 {
 		t.Fatal("/redirect")
+	}
+
+	<-time.After(time.Second)
+
+	req = httptest.NewRequest("GET", "/alive", nil)
+	rw = httptest.NewRecorder()
+
+	ServeHTTP(rw, req)
+	if rw.Result().StatusCode != 200 {
+		t.Fatal("/alive")
+	}
+
+	content, _ := ioutil.ReadAll(rw.Result().Body)
+
+	hash := map[string]int64{}
+
+	if json.Unmarshal(content, &hash) != nil {
+		t.Fatal("alive unmarshal failed")
+	}
+
+	if hash["alive"] == 0 {
+		t.Fatal("alive not return value")
 	}
 }
