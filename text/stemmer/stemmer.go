@@ -1,8 +1,8 @@
 package stemmer
 
 // @author  Mikhail Kirillov <mikkirillov@yandex.ru>
-// @version 1.006
-// @date    2019-02-11
+// @version 1.007
+// @date    2019-06-21
 
 import (
 	"bufio"
@@ -47,9 +47,9 @@ func Word(word string) string {
 				}
 
 				if text.IsRussian(word) {
-					res = append(res, russian.Stem(w))
+					res = append(res, Word(w))
 				} else {
-					res = append(res, english.Stem(w))
+					res = append(res, Word(w))
 				}
 
 			}
